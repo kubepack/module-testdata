@@ -47,8 +47,7 @@ repo_uptodate() {
 }
 
 echo "Update chart repo"
-make gen fmt
-# uibuilder-schema-checker --wizard-dir=./charts --fmt-only
+# make gen fmt
 ./hack/scripts/update-repo.sh
 
 if repo_uptodate; then
