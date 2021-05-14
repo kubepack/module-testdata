@@ -13,9 +13,9 @@ var myflow = &Flow{
 				URL:  "https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/",
 				Name: "first",
 			},
-			Version:     "0.1.0",
-			ValuesFile:  "",
-			ValuesPatch: nil,
+			Version:        "0.1.0",
+			ValuesFile:     "",
+			ValuesPatch:    nil,
 			ValueOverrides: nil,
 			Prerequisites: Prerequisites{
 				RequiredResources: []ResourceID{
@@ -60,15 +60,15 @@ var myflow = &Flow{
 			ValueOverrides: []LoadValue{
 				{
 					UseRelease: "first",
-					From:   ObjectLocator{
-						Src:   ObjectRef{
-							Target:       metav1.TypeMeta{
+					From: ObjectLocator{
+						Src: ObjectRef{
+							Target: metav1.TypeMeta{
 								Kind:       "Pod",
 								APIVersion: "v1",
 							},
-							Selector:     &metav1.LabelSelector{
+							Selector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"app.kubernetes.io/name": "{{ .Release.Name }}",
+									"app.kubernetes.io/name":     "{{ .Release.Name }}",
 									"app.kubernetes.io/instance": "{{ .Release.Name }}",
 								},
 							},
