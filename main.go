@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"path/filepath"
-
+	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery/cached/memory"
@@ -12,9 +10,25 @@ import (
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+	"log"
+	"path/filepath"
+	"sigs.k8s.io/yaml"
 )
 
+func print_yaml() {
+	data, err := yaml.Marshal(myflow)
+	if err != nil {
+		panic(err)
+	}
+	err = ioutil.WriteFile("myflow.yaml", data, 0644)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
+	print_yaml()
+
 	masterURL := ""
 	kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube", "config")
 

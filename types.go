@@ -6,8 +6,8 @@ import (
 	"kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 )
 
-type HellFlow struct {
-	Actions  []Action______ `json:"actions"`
+type Flow struct {
+	Actions  []Action       `json:"actions"`
 	EdgeList []DirectedEdge `json:"edge_list"`
 }
 
@@ -67,7 +67,7 @@ type NameTemplate struct {
 	Template    string `json:"template"`
 }
 
-type Action______ struct {
+type Action struct {
 	// Also the action name
 	ReleaseName string `json:"releaseName" protobuf:"bytes,3,opt,name=releaseName"`
 
