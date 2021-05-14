@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/dynamic"
 	"log"
 	"path/filepath"
 
@@ -108,10 +111,16 @@ func main() {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
 
-	client := kubernetes.NewForConfigOrDie(config)
-
-	var mapper meta.RESTMapper
-	mapper = restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(client.Discovery()))
+	dc := dynamic.NewForConfigOrDie(config)
+	gvrNode := schema.GroupVersionResource{
+		Group:    "",
+		Version:  "v1",
+		Resource: "nodes",
+	}
+	_, err = dc.Resource(gvrNode).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		panic(err)
+	}
 
 	namespace := "default"
 	i, err := action.NewInstaller(getter, namespace, "secret")
