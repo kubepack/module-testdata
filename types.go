@@ -37,8 +37,10 @@ type KV struct {
 }
 
 type LoadValue struct {
-	From   ObjectLocator
-	Values []KV
+	// Use the values from that release == action to render templates
+	UseRelease string        `json:"use_release"`
+	From       ObjectLocator `json:"from"`
+	Values     []KV          `json:"values"`
 }
 
 type ObjectLocator struct {
@@ -57,14 +59,8 @@ type ObjectRef struct {
 	Target       metav1.TypeMeta       `json:"target"`
 	Selector     *metav1.LabelSelector `json:"selector,omitempty"`
 	Name         *string               `json:"name,omitempty"`
-	NameTemplate *NameTemplate         `json:"nameTemplate,omitempty"`
+	NameTemplate *string         `json:"nameTemplate,omitempty"`
 	// Namespace always same as Workflow
-}
-
-type NameTemplate struct {
-	// Use the values from that action index
-	ReleaseName string `json:"release_name"`
-	Template    string `json:"template"`
 }
 
 type Action struct {
@@ -82,7 +78,7 @@ type Action struct {
 	// +kubebuilder:pruning:PreserveUnknownFields
 	ValuesPatch *runtime.RawExtension `json:"valuesPatch,omitempty" protobuf:"bytes,7,opt,name=valuesPatch"`
 
-	OverrideValues []LoadValue `json:"overrideValues"`
+	ValueOverrides []LoadValue `json:"overrideValues"`
 
 	// https://github.com/tamalsaha/kstatus-demo
 	ReadinessCriteria *ReadinessCriteria `json:"readiness_criteria"`
