@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/discovery"
 	"sigs.k8s.io/cli-utils/pkg/kstatus/status"
 )
@@ -33,8 +33,9 @@ func IsResourceExistsAndReady(dc dynamic.Interface, mapper discovery.ResourceMap
 	if err != nil {
 		return false, err
 	}
-	if s.Status == status.CurrentStatus {
-		return true, nil
+	if s.Status != status.CurrentStatus {
+		// How to surface this back to the Flow CR?
+		klog.Warningf("gvr %v status %+v", gvr, s)
 	}
-	return false, fmt.Errorf("%+v", s)
+	return s.Status == status.CurrentStatus, nil
 }

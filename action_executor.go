@@ -1,8 +1,16 @@
 package main
 
-type ActionRunner struct {
-	action Action
+import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
+	"kmodules.xyz/client-go/discovery"
+)
 
+type ActionRunner struct {
+	dc dynamic.Interface
+	mapper discovery.ResourceMapper
+
+	action Action
 	err error
 }
 
@@ -41,7 +49,20 @@ func (e *ActionRunner) MeetsPrerequisites() bool {
 		return false
 	}
 
-
+	for _, r := range e.action.Prerequisites.RequiredResources {
+		exists, err := IsResourceExistsAndReady(e.dc, e.mapper, schema.GroupVersionResource{
+			Group:    r.Group,
+			Version:  r.Version,
+			Resource: r.Resource,
+		})
+		if err != nil {
+			e.err = err
+			return false
+		}
+		if !exists {
+			return false
+		}
+	}
 	return true
 }
 
@@ -59,6 +80,7 @@ func (e *ActionRunner) WaitUntilReady() {
 		e.err = NewAlreadyErrored(e.err)
 		return
 	}
+
 
 
 
