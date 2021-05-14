@@ -94,7 +94,7 @@ var (
 	version = "8.1.1"
 )
 
-func main() {
+func main____() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -150,4 +150,15 @@ func main() {
 		klog.Fatal(err)
 	}
 	fmt.Println(rel)
+}
+
+func main() {
+	bc := &BaseConfig{}
+	bc.Init("it")
+
+	cc := &ChildConfig{
+		bc,
+	}
+	cc.Init("xyz")
+	cc.BaseConfig.Init("xyz")
 }
