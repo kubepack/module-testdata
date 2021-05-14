@@ -3,17 +3,27 @@ module github.com/tamalsaha/hell-flow
 go 1.16
 
 require (
+	github.com/evanphx/json-patch v4.9.0+incompatible
+	github.com/gabriel-vasile/mimetype v1.2.0
+	github.com/imdario/mergo v0.3.11
+	github.com/pkg/errors v0.9.1
 	gomodules.xyz/x v0.0.4
+	helm.sh/helm/v3 v3.5.2
 	k8s.io/apimachinery v0.21.0
+	k8s.io/cli-runtime v0.21.0
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog/v2 v2.8.0
 	kmodules.xyz/client-go v0.0.0-20210514054158-27e164b43474
 	kmodules.xyz/resource-metadata v0.5.5-0.20210514060730-df2b810e12e6
-	kubepack.dev/kubepack v0.3.3
-	kubepack.dev/lib-helm v0.2.3
+	kubepack.dev/kubepack v0.3.4-0.20210513213410-fab49d312392
+	kubepack.dev/lib-app v0.0.5-0.20210514160419-5e94925faf06
+	kubepack.dev/lib-helm v0.2.4-0.20210504075710-8653e4557a39
+	sigs.k8s.io/application v0.8.2-0.20200306235134-f10d9ca8abd4
 	sigs.k8s.io/cli-utils v0.25.0
 	sigs.k8s.io/yaml v1.2.0
 )
+
+replace github.com/go-macaron/binding => github.com/gomodules/binding v0.0.0-20200811095614-c752727d2156
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
 
