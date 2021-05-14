@@ -3,7 +3,6 @@ package main
 import "fmt"
 
 type BaseConfig struct {
-
 }
 
 func (c *BaseConfig) Init(s string) {

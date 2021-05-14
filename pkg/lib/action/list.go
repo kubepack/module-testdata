@@ -1,6 +1,8 @@
 package action
 
 import (
+	actionx "github.com/tamalsaha/hell-flow/pkg/action"
+
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/release"
@@ -26,14 +28,14 @@ type ListOptions struct {
 }
 
 type Lister struct {
-	cfg *action.Configuration
+	cfg *actionx.Configuration
 
 	opts   ListOptions
 	result []*release.Release
 }
 
 func NewLister(getter genericclioptions.RESTClientGetter, namespace string, helmDriver string) (*Lister, error) {
-	cfg := new(action.Configuration)
+	cfg := new(actionx.Configuration)
 	// TODO: Use secret driver for which namespace?
 	err := cfg.Init(getter, namespace, helmDriver, debug)
 	if err != nil {
@@ -44,7 +46,7 @@ func NewLister(getter genericclioptions.RESTClientGetter, namespace string, helm
 	return NewListerForConfig(cfg), nil
 }
 
-func NewListerForConfig(cfg *action.Configuration) *Lister {
+func NewListerForConfig(cfg *actionx.Configuration) *Lister {
 	return &Lister{
 		cfg: cfg,
 	}
@@ -56,7 +58,7 @@ func (x *Lister) WithOptions(opts ListOptions) *Lister {
 }
 
 func (x *Lister) Run() ([]*release.Release, error) {
-	cmd := action.NewList(x.cfg)
+	cmd := action.NewList(x.cfg.Configuration)
 	cmd.All = x.opts.All
 	cmd.AllNamespaces = x.opts.Namespace == ""
 	cmd.Sort = x.opts.Sort

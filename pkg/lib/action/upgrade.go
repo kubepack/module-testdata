@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	actionx "github.com/tamalsaha/hell-flow/pkg/action"
+
 	jsonpatch "github.com/evanphx/json-patch"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -40,7 +42,7 @@ type UpgradeOptions struct {
 }
 
 type Upgrader struct {
-	cfg *action.Configuration
+	cfg *actionx.Configuration
 
 	opts        UpgradeOptions
 	reg         *repo.Registry
@@ -49,7 +51,7 @@ type Upgrader struct {
 }
 
 func NewUpgrader(getter genericclioptions.RESTClientGetter, namespace string, helmDriver string) (*Upgrader, error) {
-	cfg := new(action.Configuration)
+	cfg := new(actionx.Configuration)
 	// TODO: Use secret driver for which namespace?
 	err := cfg.Init(getter, namespace, helmDriver, debug)
 	if err != nil {
@@ -60,7 +62,7 @@ func NewUpgrader(getter genericclioptions.RESTClientGetter, namespace string, he
 	return NewUpgraderForConfig(cfg), nil
 }
 
-func NewUpgraderForConfig(cfg *action.Configuration) *Upgrader {
+func NewUpgraderForConfig(cfg *actionx.Configuration) *Upgrader {
 	return &Upgrader{
 		cfg: cfg,
 	}
@@ -96,7 +98,7 @@ func (x *Upgrader) Run() (*release.Release, error) {
 		return nil, err
 	}
 
-	cmd := action.NewUpgrade(x.cfg)
+	cmd := action.NewUpgrade(x.cfg.Configuration)
 	cmd.Install = x.opts.Install
 	cmd.Devel = x.opts.Devel
 	cmd.Namespace = x.opts.Namespace

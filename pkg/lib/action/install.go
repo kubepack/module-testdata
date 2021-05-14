@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	actionx "github.com/tamalsaha/hell-flow/pkg/action"
+
 	jsonpatch "github.com/evanphx/json-patch"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -36,7 +38,7 @@ type InstallOptions struct {
 }
 
 type Installer struct {
-	cfg *action.Configuration
+	cfg *actionx.Configuration
 
 	opts   InstallOptions
 	reg    *repo.Registry
@@ -44,7 +46,7 @@ type Installer struct {
 }
 
 func NewInstaller(getter genericclioptions.RESTClientGetter, namespace string, helmDriver string) (*Installer, error) {
-	cfg := new(action.Configuration)
+	cfg := new(actionx.Configuration)
 	// TODO: Use secret driver for which namespace?
 	err := cfg.Init(getter, namespace, helmDriver, debug)
 	if err != nil {
@@ -55,7 +57,7 @@ func NewInstaller(getter genericclioptions.RESTClientGetter, namespace string, h
 	return NewInstallerForConfig(cfg), nil
 }
 
-func NewInstallerForConfig(cfg *action.Configuration) *Installer {
+func NewInstallerForConfig(cfg *actionx.Configuration) *Installer {
 	return &Installer{
 		cfg: cfg,
 	}
@@ -86,7 +88,7 @@ func (x *Installer) Run() (*release.Release, error) {
 		return nil, err
 	}
 
-	cmd := action.NewInstall(x.cfg)
+	cmd := action.NewInstall(x.cfg.Configuration)
 	var extraAPIs []string
 
 	cmd.DryRun = x.opts.DryRun

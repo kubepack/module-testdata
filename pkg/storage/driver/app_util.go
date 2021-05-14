@@ -22,11 +22,6 @@ import (
 	"strconv"
 	"time"
 
-	"kubepack.dev/kubepack/apis"
-	"kubepack.dev/kubepack/pkg/lib"
-	appapi "kubepack.dev/lib-app/api/v1alpha1"
-	"kubepack.dev/lib-app/pkg/editor"
-
 	"github.com/gabriel-vasile/mimetype"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/release"
@@ -36,6 +31,10 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/restmapper"
+	"kubepack.dev/kubepack/apis"
+	"kubepack.dev/kubepack/pkg/lib"
+	appapi "kubepack.dev/lib-app/api/v1alpha1"
+	"kubepack.dev/lib-app/pkg/editor"
 	"sigs.k8s.io/application/api/app/v1beta1"
 )
 
