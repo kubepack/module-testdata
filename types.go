@@ -7,7 +7,7 @@ import (
 )
 
 type HellFlow struct {
-	Actions []Action______ `json:"actions"`
+	Actions  []Action______ `json:"actions"`
 	EdgeList []DirectedEdge `json:"edge_list"`
 }
 
@@ -64,15 +64,15 @@ type ObjectRef struct {
 type NameTemplate struct {
 	// Use the values from that action index
 	ReleaseName string `json:"release_name"`
-	Template string `json:"template"`
+	Template    string `json:"template"`
 }
 
 type Action______ struct {
 	// Also the action name
 	ReleaseName string `json:"releaseName" protobuf:"bytes,3,opt,name=releaseName"`
 
-	ChartRef    `json:",inline" protobuf:"bytes,1,opt,name=chartRef"`
-	Version     string `json:"version" protobuf:"bytes,2,opt,name=version"`
+	ChartRef `json:",inline" protobuf:"bytes,1,opt,name=chartRef"`
+	Version  string `json:"version" protobuf:"bytes,2,opt,name=version"`
 
 	// Namespace   string `json:"namespace" protobuf:"bytes,4,opt,name=namespace"`
 
@@ -100,11 +100,9 @@ type ReadinessCriteria struct {
 	// List objects for which to wait to reconcile using kstatus == Current
 	WaitForReconciled bool `json:"wait_for_reconciled"`
 
-
 	RequiredResources []ResourceID `json:"required_resources"`
-	WaitFors []WaitFlags `json:"waitFors,omitempty" protobuf:"bytes,9,rep,name=waitFors"`
+	WaitFors          []WaitFlags  `json:"waitFors,omitempty" protobuf:"bytes,9,rep,name=waitFors"`
 }
-
 
 type ChartRef struct {
 	URL  string `json:"url" protobuf:"bytes,1,opt,name=url"`
