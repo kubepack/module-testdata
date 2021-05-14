@@ -31,7 +31,7 @@ CHARTS_DIR=charts
 TMP_DIR="${SCRIPT_ROOT}/tmp"
 
 REPO_DIR=${REPO_DIR:-stable}
-REPO_URL=https://raw.githubusercontent.com/bytebuilders/ui-wizards/master/${REPO_DIR}/
+REPO_URL=https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/master/${REPO_DIR}/
 
 # create temporary charts folder
 mkdir -p $TMP_DIR/$CHARTS_DIR
