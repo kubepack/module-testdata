@@ -48,9 +48,26 @@ func main() {
 		Version:  "",
 		Resource: "mutatingwebhookconfigurations",
 	}
-	gvrs, err := mapper.ResourcesFor(gvr)
+	gvrs, err := mapper.ResourceFor(gvr)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(gvrs)
+
+	gvk := schema.GroupVersionKind{
+		Group:    "admissionregistration.k8s.io",
+		Version:  "",
+		Kind:    "MutatingWebhookConfiguration",
+	}
+	mappings, err := mapper.RESTMappings(gvk.GroupKind(), "v1alpha1")
+	if err != nil {
+		if meta.IsNoMatchError(err) {
+			fmt.Println(err.(*meta.NoKindMatchError).Error())
+			return
+		}
+		panic(err)
+	}
+	for _, m2 := range mappings {
+		fmt.Println(m2.GroupVersionKind)
+	}
 }
