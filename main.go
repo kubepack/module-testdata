@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
+	"path/filepath"
+
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery/cached/memory"
@@ -10,8 +13,6 @@ import (
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	"log"
-	"path/filepath"
 	"sigs.k8s.io/yaml"
 )
 

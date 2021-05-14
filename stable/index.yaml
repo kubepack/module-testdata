@@ -3,7 +3,7 @@ entries:
   first:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-05-14T02:16:11.678523947Z"
+    created: "2021-05-14T02:34:55.365202741Z"
     description: A Helm chart for Kubernetes
     digest: bcc3f548691bd7d578bc010d663526d456056c8f0cd4fe9b357d0620e0f37c41
     name: first
@@ -14,7 +14,7 @@ entries:
   second:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-05-14T02:16:11.679257858Z"
+    created: "2021-05-14T02:34:55.365957441Z"
     description: A Helm chart for Kubernetes
     digest: df1bd0e06ad08117280f63ec97c7d67152abfb42454d41c2ca7d863dccb31881
     name: second
@@ -25,7 +25,7 @@ entries:
   third:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-05-14T02:16:11.680272571Z"
+    created: "2021-05-14T02:34:55.366527641Z"
     description: A Helm chart for Kubernetes
     digest: d599b982d4a0fae4ac0e0d957202175d916acf7b58647f36fde33c67682ca683
     name: third
@@ -33,4 +33,4 @@ entries:
     urls:
     - https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/third/third-0.1.0.tgz
     version: 0.1.0
-generated: "2021-05-14T02:16:11.677376332Z"
+generated: "2021-05-14T02:34:55.364399642Z"
