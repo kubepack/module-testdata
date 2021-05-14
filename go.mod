@@ -3,10 +3,14 @@ module github.com/tamalsaha/hell-flow
 go 1.16
 
 require (
+	gomodules.xyz/x v0.0.4
 	k8s.io/apimachinery v0.21.0
-	k8s.io/client-go v0.21.0
+	k8s.io/client-go v12.0.0+incompatible
+	k8s.io/klog/v2 v2.8.0
 	kmodules.xyz/client-go v0.0.0-20210514054158-27e164b43474
 	kmodules.xyz/resource-metadata v0.5.5-0.20210514060730-df2b810e12e6
+	kubepack.dev/kubepack v0.3.3
+	kubepack.dev/lib-helm v0.2.3
 	sigs.k8s.io/cli-utils v0.25.0
 	sigs.k8s.io/yaml v1.2.0
 )

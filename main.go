@@ -6,13 +6,19 @@ import (
 	"log"
 	"path/filepath"
 
+	"gomodules.xyz/x/crypto/rand"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/util/homedir"
+	"k8s.io/klog/v2"
+	clientcmdutil "kmodules.xyz/client-go/tools/clientcmd"
+	"kubepack.dev/kubepack/pkg/lib"
+	"kubepack.dev/lib-helm/action"
 	"sigs.k8s.io/yaml"
 )
 
@@ -27,7 +33,7 @@ func print_yaml() {
 	}
 }
 
-func main() {
+func main__() {
 	print_yaml()
 
 	masterURL := ""
@@ -55,8 +61,8 @@ func main() {
 	fmt.Println(gvrs)
 
 	gvk := schema.GroupVersionKind{
-		Group:    "admissionregistration.k8s.io",
-		Version:  "",
+		Group:   "admissionregistration.k8s.io",
+		Version: "",
 		Kind:    "MutatingWebhookConfiguration",
 	}
 	mappings, err := mapper.RESTMappings(gvk.GroupKind(), "v1alpha1")
@@ -70,4 +76,69 @@ func main() {
 	for _, m2 := range mappings {
 		fmt.Println(m2.GroupVersionKind)
 	}
+}
+
+var (
+	masterURL      = ""
+	kubeconfigPath = filepath.Join(homedir.HomeDir(), ".kube", "config")
+
+	//url     = "https://charts.appscode.com/stable/"
+	//name    = "kubedb"
+	//version = "v0.13.0-rc.0"
+
+	url     = "https://kubernetes-charts.storage.googleapis.com"
+	name    = "wordpress"
+	version = "8.1.1"
+)
+
+func main() {
+	print_yaml()
+
+	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
+		&clientcmd.ConfigOverrides{ClusterInfo: clientcmdapi.Cluster{Server: masterURL}})
+	kubeconfig, err := cc.RawConfig()
+	if err != nil {
+		klog.Fatal(err)
+	}
+	getter := clientcmdutil.NewClientGetter(&kubeconfig)
+
+	config, err := cc.ClientConfig() // clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
+	if err != nil {
+		log.Fatalf("Could not get Kubernetes config: %s", err)
+	}
+
+	client := kubernetes.NewForConfigOrDie(config)
+
+	var mapper meta.RESTMapper
+	mapper = restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(client.Discovery()))
+
+	namespace := "default"
+	i, err := action.NewInstaller(getter, namespace, "secret")
+	if err != nil {
+		klog.Fatal(err)
+	}
+	i.WithRegistry(lib.DefaultRegistry).
+		WithOptions(action.InstallOptions{
+			ChartURL:     url,
+			ChartName:    name,
+			Version:      version,
+			ValuesFile:   "",
+			ValuesPatch:  nil,
+			DryRun:       false,
+			DisableHooks: false,
+			Replace:      false,
+			Wait:         false,
+			Devel:        false,
+			Timeout:      0,
+			Namespace:    namespace,
+			ReleaseName:  rand.WithUniqSuffix(name),
+			Atomic:       false,
+			SkipCRDs:     false,
+		})
+	rel, err := i.Run()
+	if err != nil {
+		klog.Fatal(err)
+	}
+	fmt.Println(rel)
 }

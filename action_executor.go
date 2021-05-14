@@ -7,32 +7,28 @@ import (
 )
 
 type ActionRunner struct {
-	dc dynamic.Interface
+	dc     dynamic.Interface
 	mapper discovery.ResourceMapper
 
 	action Action
-	err error
+	err    error
 }
 
-/*
-	runner := new(ActionRunner)
+func (runner *ActionRunner) Execute() error {
 	if runner.MeetsPrerequisites() {
 		runner.Apply().WaitUntilReady()
 		if runner.Err() != nil {
 			// if ae, ok := runner.Err().(AlreadyErrored); ok {
-				// action was already errored out, Rest before reusing
-			}
+			// action was already errored out, Rest before reusing
 		}
-
 	} else {
 		if runner.Err() != nil {
 			// if ae, ok := runner.Err().(AlreadyErrored); ok {
-				// action was already errored out, Rest before reusing
-			}
+			// action was already errored out, Rest before reusing
 		}
 	}
-
-*/
+	return nil
+}
 
 // Do we need this?
 func (e *ActionRunner) ResetError() {
@@ -80,9 +76,6 @@ func (e *ActionRunner) WaitUntilReady() {
 		e.err = NewAlreadyErrored(e.err)
 		return
 	}
-
-
-
 
 }
 
