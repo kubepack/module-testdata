@@ -3,7 +3,108 @@ package main
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 )
+
+type HellFlow struct {
+	Actions []Action______ `json:"actions"`
+	EdgeList []DirectedEdge `json:"edge_list"`
+}
+
+// Check array, map, etc
+// can this be always string like in --set keys?
+// Keep is such that we can always generate helm equivalent command
+type KV struct {
+	Key string
+	// type is an OpenAPI type definition for this column.
+	// See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#data-types for more.
+	Type string `json:"type"`
+	// format is an optional OpenAPI type definition for this column. The 'name' format is applied
+	// to the primary identifier column to assist in clients identifying column is the resource name.
+	// See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#data-types for more.
+	// +optional
+	Format string `json:"format,omitempty"`
+	// PathTemplate is a Go text template that will be evaluated to determine cell value.
+	// Users can use JSONPath expression to extract nested fields and apply template functions from Masterminds/sprig library.
+	// The template function for JSON path is called `jp`.
+	// Example: {{ jp "{.a.b}" . }} or {{ jp "{.a.b}" true }}, if json output is desired from JSONPath parser
+	// +optional
+	PathTemplate string `json:"pathTemplate,omitempty"`
+	//
+	//
+	// Directly use path from object
+	Path string `json:"path"`
+}
+
+type LoadValue struct {
+	From   ObjectLocator
+	Values []KV
+}
+
+type ObjectLocator struct {
+	Src   ObjectRef `json:"src"`
+	Paths []string  `json:"paths"` // sequence of DirectedEdge names
+}
+
+type DirectedEdge struct {
+	Name       string
+	Src        metav1.TypeMeta
+	Dst        metav1.TypeMeta
+	Connection v1alpha1.ResourceConnectionSpec
+}
+
+type ObjectRef struct {
+	Target       metav1.TypeMeta       `json:"target"`
+	Selector     *metav1.LabelSelector `json:"selector,omitempty"`
+	Name         *string               `json:"name,omitempty"`
+	NameTemplate *NameTemplate         `json:"nameTemplate,omitempty"`
+	// Namespace always same as Workflow
+}
+
+type NameTemplate struct {
+	// Use the values from that action index
+	ReleaseName string `json:"release_name"`
+	Template string `json:"template"`
+}
+
+type Action______ struct {
+	// Also the action name
+	ReleaseName string `json:"releaseName" protobuf:"bytes,3,opt,name=releaseName"`
+
+	ChartRef    `json:",inline" protobuf:"bytes,1,opt,name=chartRef"`
+	Version     string `json:"version" protobuf:"bytes,2,opt,name=version"`
+
+	// Namespace   string `json:"namespace" protobuf:"bytes,4,opt,name=namespace"`
+
+	ValuesFile string `json:"valuesFile,omitempty" protobuf:"bytes,6,opt,name=valuesFile"`
+	// RFC 6902 compatible json patch. ref: http://jsonpatch.com
+	// +optional
+	// +kubebuilder:pruning:PreserveUnknownFields
+	ValuesPatch *runtime.RawExtension `json:"valuesPatch,omitempty" protobuf:"bytes,7,opt,name=valuesPatch"`
+
+	OverrideValues []LoadValue `json:"overrideValues"`
+
+	// https://github.com/tamalsaha/kstatus-demo
+	ReadinessCriteria *ReadinessCriteria `json:"readiness_criteria"`
+
+	Prerequisites Prerequisites `json:"prerequisites"`
+}
+
+type Prerequisites struct {
+	RequiredResources []ResourceID `json:"required_resources"`
+}
+
+type ReadinessCriteria struct {
+	HelmWait bool `json:"helm_wait"`
+
+	// List objects for which to wait to reconcile using kstatus == Current
+	WaitForReconciled bool `json:"wait_for_reconciled"`
+
+
+	RequiredResources []ResourceID `json:"required_resources"`
+	WaitFors []WaitFlags `json:"waitFors,omitempty" protobuf:"bytes,9,rep,name=waitFors"`
+}
+
 
 type ChartRef struct {
 	URL  string `json:"url" protobuf:"bytes,1,opt,name=url"`
