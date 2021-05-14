@@ -7,6 +7,7 @@ import (
 	"log"
 	"path/filepath"
 
+	"github.com/tamalsaha/hell-flow/pkg/lib/action"
 	"gomodules.xyz/x/crypto/rand"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,7 +22,6 @@ import (
 	"k8s.io/klog/v2"
 	clientcmdutil "kmodules.xyz/client-go/tools/clientcmd"
 	"kubepack.dev/kubepack/pkg/lib"
-	"github.com/tamalsaha/hell-flow/pkg/lib/action"
 	"sigs.k8s.io/yaml"
 )
 
@@ -81,6 +81,17 @@ func main__() {
 	}
 }
 
+func main_config_overriding() {
+	bc := &BaseConfig{}
+	bc.Init("it")
+
+	cc := &ChildConfig{
+		bc,
+	}
+	cc.Init("xyz")
+	cc.BaseConfig.Init("xyz")
+}
+
 var (
 	masterURL      = ""
 	kubeconfigPath = filepath.Join(homedir.HomeDir(), ".kube", "config")
@@ -89,12 +100,12 @@ var (
 	//name    = "kubedb"
 	//version = "v0.13.0-rc.0"
 
-	url     = "https://kubernetes-charts.storage.googleapis.com"
-	name    = "wordpress"
-	version = "8.1.1"
+	url     = "https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/"
+	name    = "first"
+	version = "0.1.0"
 )
 
-func main____() {
+func main() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -150,15 +161,4 @@ func main____() {
 		klog.Fatal(err)
 	}
 	fmt.Println(rel)
-}
-
-func main() {
-	bc := &BaseConfig{}
-	bc.Init("it")
-
-	cc := &ChildConfig{
-		bc,
-	}
-	cc.Init("xyz")
-	cc.BaseConfig.Init("xyz")
 }
