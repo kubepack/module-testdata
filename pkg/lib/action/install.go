@@ -1,40 +1,36 @@
 package action
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	actionx "github.com/tamalsaha/hell-flow/pkg/action"
+	"github.com/tamalsaha/hell-flow/pkg/values"
 
-	jsonpatch "github.com/evanphx/json-patch"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/release"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	libchart "kubepack.dev/lib-helm/chart"
 	"kubepack.dev/lib-helm/repo"
-	"sigs.k8s.io/yaml"
 )
 
 type InstallOptions struct {
-	ChartURL     string                `json:"chartURL"`
-	ChartName    string                `json:"chartName"`
-	Version      string                `json:"version"`
-	ValuesFile   string                `json:"valuesFile"`
-	ValuesPatch  *runtime.RawExtension `json:"valuesPatch"`
-	DryRun       bool                  `json:"dryRun"`
-	DisableHooks bool                  `json:"disableHooks"`
-	Replace      bool                  `json:"replace"`
-	Wait         bool                  `json:"wait"`
-	Devel        bool                  `json:"devel"`
-	Timeout      time.Duration         `json:"timeout"`
-	Namespace    string                `json:"namespace"`
-	ReleaseName  string                `json:"releaseName"`
-	Atomic       bool                  `json:"atomic"`
-	SkipCRDs     bool                  `json:"skipCRDs"`
+	ChartURL     string         `json:"chartURL"`
+	ChartName    string         `json:"chartName"`
+	Version      string         `json:"version"`
+	Values       values.Options `json:",inline,omitempty"`
+	DryRun       bool           `json:"dryRun"`
+	DisableHooks bool           `json:"disableHooks"`
+	Replace      bool           `json:"replace"`
+	Wait         bool           `json:"wait"`
+	Devel        bool           `json:"devel"`
+	Timeout      time.Duration  `json:"timeout"`
+	Namespace    string         `json:"namespace"`
+	ReleaseName  string         `json:"releaseName"`
+	Atomic       bool           `json:"atomic"`
+	SkipCRDs     bool           `json:"skipCRDs"`
 }
 
 type Installer struct {
@@ -124,46 +120,12 @@ func (x *Installer) Run() (*release.Release, error) {
 		}
 	}
 
-	vals := chrt.Values
-	if x.opts.ValuesPatch != nil {
-		var values []byte
-		if x.opts.ValuesFile == "" {
-			values, err = json.Marshal(vals)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			for _, f := range chrt.Raw {
-				if f.Name == x.opts.ValuesFile {
-					if err := yaml.Unmarshal(f.Data, &vals); err != nil {
-						return nil, fmt.Errorf("cannot load %s. Reason: %v", f.Name, err.Error())
-					}
-					values, err = yaml.YAMLToJSON(f.Data)
-					if err != nil {
-						return nil, err
-					}
-					break
-				}
-			}
-		}
-
-		patchData, err := json.Marshal(x.opts.ValuesPatch)
-		if err != nil {
-			return nil, err
-		}
-		patch, err := jsonpatch.DecodePatch(patchData)
-		if err != nil {
-			return nil, err
-		}
-		modifiedValues, err := patch.Apply(values)
-		if err != nil {
-			return nil, err
-		}
-		err = json.Unmarshal(modifiedValues, &vals)
-		if err != nil {
-			return nil, err
-		}
+	vals, err := x.opts.Values.MergeValues(chrt.Chart)
+	if err != nil {
+		return nil, err
 	}
+	// chartutil.CoalesceValues(chrt, chrtVals) will use vals to render templates
+	chrt.Chart.Values = map[string]interface{}{}
 
 	return cmd.Run(chrt.Chart, vals)
 }

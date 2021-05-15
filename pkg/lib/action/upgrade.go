@@ -1,44 +1,40 @@
 package action
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	actionx "github.com/tamalsaha/hell-flow/pkg/action"
+	"github.com/tamalsaha/hell-flow/pkg/values"
 
-	jsonpatch "github.com/evanphx/json-patch"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/release"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	libchart "kubepack.dev/lib-helm/chart"
 	"kubepack.dev/lib-helm/repo"
-	"sigs.k8s.io/yaml"
 )
 
 type UpgradeOptions struct {
-	ChartURL      string                `json:"chartURL"`
-	ChartName     string                `json:"chartName"`
-	Version       string                `json:"version"`
-	ValuesFile    string                `json:"valuesFile"`
-	ValuesPatch   *runtime.RawExtension `json:"valuesPatch"`
-	Install       bool                  `json:"install"`
-	Devel         bool                  `json:"devel"`
-	Namespace     string                `json:"namespace"`
-	Timeout       time.Duration         `json:"timeout"`
-	Wait          bool                  `json:"wait"`
-	DisableHooks  bool                  `json:"disableHooks"`
-	DryRun        bool                  `json:"dryRun"`
-	Force         bool                  `json:"force"`
-	ResetValues   bool                  `json:"resetValues"`
-	ReuseValues   bool                  `json:"reuseValues"`
-	Recreate      bool                  `json:"recreate"`
-	MaxHistory    int                   `json:"maxHistory"`
-	Atomic        bool                  `json:"atomic"`
-	CleanupOnFail bool                  `json:"cleanupOnFail"`
+	ChartURL      string         `json:"chartURL"`
+	ChartName     string         `json:"chartName"`
+	Version       string         `json:"version"`
+	Values        values.Options `json:",inline,omitempty"`
+	Install       bool           `json:"install"`
+	Devel         bool           `json:"devel"`
+	Namespace     string         `json:"namespace"`
+	Timeout       time.Duration  `json:"timeout"`
+	Wait          bool           `json:"wait"`
+	DisableHooks  bool           `json:"disableHooks"`
+	DryRun        bool           `json:"dryRun"`
+	Force         bool           `json:"force"`
+	ResetValues   bool           `json:"resetValues"`
+	ReuseValues   bool           `json:"reuseValues"`
+	Recreate      bool           `json:"recreate"`
+	MaxHistory    int            `json:"maxHistory"`
+	Atomic        bool           `json:"atomic"`
+	CleanupOnFail bool           `json:"cleanupOnFail"`
 }
 
 type Upgrader struct {
@@ -135,46 +131,12 @@ func (x *Upgrader) Run() (*release.Release, error) {
 		}
 	}
 
-	vals := chrt.Values
-	if x.opts.ValuesPatch != nil {
-		var values []byte
-		if x.opts.ValuesFile == "" {
-			values, err = json.Marshal(vals)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			for _, f := range chrt.Raw {
-				if f.Name == x.opts.ValuesFile {
-					if err := yaml.Unmarshal(f.Data, &vals); err != nil {
-						return nil, fmt.Errorf("cannot load %s. Reason: %v", f.Name, err.Error())
-					}
-					values, err = yaml.YAMLToJSON(f.Data)
-					if err != nil {
-						return nil, err
-					}
-					break
-				}
-			}
-		}
-
-		patchData, err := json.Marshal(x.opts.ValuesPatch)
-		if err != nil {
-			return nil, err
-		}
-		patch, err := jsonpatch.DecodePatch(patchData)
-		if err != nil {
-			return nil, err
-		}
-		modifiedValues, err := patch.Apply(values)
-		if err != nil {
-			return nil, err
-		}
-		err = json.Unmarshal(modifiedValues, &vals)
-		if err != nil {
-			return nil, err
-		}
+	vals, err := x.opts.Values.MergeValues(chrt.Chart)
+	if err != nil {
+		return nil, err
 	}
+	// chartutil.CoalesceValues(chrt, chrtVals) will use vals to render templates
+	chrt.Chart.Values = map[string]interface{}{}
 
 	return cmd.Run(x.releaseName, chrt.Chart, vals)
 }

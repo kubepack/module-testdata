@@ -23,6 +23,7 @@ import (
 	kubex "github.com/tamalsaha/hell-flow/pkg/kube"
 
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/storage"
 	"helm.sh/helm/v3/pkg/storage/driver"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -40,18 +41,29 @@ type Configuration struct {
 
 // Init initializes the action configuration
 func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespace, helmDriver string, log action.DebugLog) error {
-	//kc2 := kube.New(getter)
-	//kc2.Log = log
-	kc, err := kubex.New(getter, log)
-	if err != nil {
-		return err
+	var kc kube.Interface
+	var factory kube.Factory
+
+	switch helmDriver {
+	case "secret", "secrets", "", "configmap", "configmaps", "memory", "sql":
+		client := kube.New(getter)
+		client.Log = log
+		kc = client
+		factory = client.Factory
+	default:
+		client, err := kubex.New(getter, log)
+		if err != nil {
+			return err
+		}
+		kc = client
+		factory = client.Factory
 	}
 
 	lazyClient := &lazyClient{
 		namespace: namespace,
-		clientFn:  kc.Factory.KubernetesClientSet,
+		clientFn:  factory.KubernetesClientSet,
 		appClientFn: func() (*appcs.Clientset, error) {
-			config, err := kc.Factory.ToRawKubeConfigLoader().ClientConfig()
+			config, err := factory.ToRawKubeConfigLoader().ClientConfig()
 			if err != nil {
 				return nil, err
 			}
@@ -61,8 +73,8 @@ func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespac
 
 	var store *storage.Storage
 	switch helmDriver {
-	case "app", "apps", "application", "applications":
-		config, err := kc.Factory.ToRawKubeConfigLoader().ClientConfig()
+	case "app", "apps", "application", "applications", "editor":
+		config, err := factory.ToRawKubeConfigLoader().ClientConfig()
 		if err != nil {
 			return err
 		}

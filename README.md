@@ -13,3 +13,13 @@ helm repo update
 **Render Templates**
 
 - https://github.com/helm/helm/blob/43853ea772e779b617b011a8d4e69205636fa4f9/pkg/engine/engine.go#L190-L261
+
+**Zero Template Chart**
+
+- Must always use Install action
+- Can't use Install or Upgrade to remove any YAMLs
+
+
+** ToDos **
+
+- [ ] Auto Register Application CRD
