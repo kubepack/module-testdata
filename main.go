@@ -21,6 +21,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
+	"kmodules.xyz/client-go/discovery"
 	clientcmdutil "kmodules.xyz/client-go/tools/clientcmd"
 	"kubepack.dev/kubepack/pkg/lib"
 	"sigs.k8s.io/yaml"
@@ -106,7 +107,7 @@ var (
 	version = "0.1.0"
 )
 
-func main() {
+func main__install_chart() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -187,4 +188,85 @@ func main_install_or_upgrdae() {
 		klog.Fatal(err)
 	}
 	klog.Infof("Chart %s", vt)
+}
+
+func main() {
+	print_yaml()
+
+	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
+		&clientcmd.ConfigOverrides{ClusterInfo: clientcmdapi.Cluster{Server: masterURL}})
+	kubeconfig, err := cc.RawConfig()
+	if err != nil {
+		klog.Fatal(err)
+	}
+	getter := clientcmdutil.NewClientGetter(&kubeconfig)
+
+	config, err := cc.ClientConfig() // clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
+	if err != nil {
+		log.Fatalf("Could not get Kubernetes config: %s", err)
+	}
+
+	dc := dynamic.NewForConfigOrDie(config)
+	mapper, err := getter.ToRESTMapper()
+	if err != nil {
+		klog.Fatal(err)
+	}
+
+	flowstore := map[string]*FlowState{}
+
+	for _, action := range myflow.Actions {
+		runner := ActionRunner{
+			dc:        dc,
+			mapper:    discovery.NewResourceMapper(mapper),
+			flowstore: flowstore,
+			action:    action,
+			// err:    nil,
+		}
+		err := runner.Execute()
+		if err != nil {
+			klog.Fatalln(err)
+		}
+	}
+
+	gvrNode := schema.GroupVersionResource{
+		Group:    "",
+		Version:  "v1",
+		Resource: "nodes",
+	}
+	_, err = dc.Resource(gvrNode).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	namespace := "default"
+	i, err := action.NewInstaller(getter, namespace, "secret")
+	if err != nil {
+		klog.Fatal(err)
+	}
+	i.WithRegistry(lib.DefaultRegistry).
+		WithOptions(action.InstallOptions{
+			ChartURL:  url,
+			ChartName: name,
+			Version:   version,
+			Values: values.Options{
+				ValuesFile:  "",
+				ValuesPatch: nil,
+			},
+			DryRun:       false,
+			DisableHooks: false,
+			Replace:      false,
+			Wait:         false,
+			Devel:        false,
+			Timeout:      0,
+			Namespace:    namespace,
+			ReleaseName:  name,
+			Atomic:       false,
+			SkipCRDs:     false,
+		})
+	rel, err := i.Run()
+	if err != nil {
+		klog.Fatal(err)
+	}
+	klog.Infoln(rel)
 }

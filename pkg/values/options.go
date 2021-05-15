@@ -27,6 +27,12 @@ type Options struct {
 	ValuesPatch   *runtime.RawExtension  `json:"valuesPatch"`
 	StringValues  []string               `json:"stringValues"`
 	Values        []string               `json:"values"`
+	KVPairs       []KV                   `json:"kv_pairs"`
+}
+
+type KV struct {
+	K string
+	V interface{}
 }
 
 // MergeValues merges values from files specified via -f/--values and directly
@@ -98,6 +104,11 @@ func (opts *Options) MergeValues(chrt *chart.Chart) (map[string]interface{}, err
 		if err := strvals.ParseIntoString(value, base); err != nil {
 			return nil, errors.Wrap(err, "failed parsing --set-string data")
 		}
+	}
+
+	for _, kv := range opts.KVPairs {
+		// unstructured.SetNestedField()
+		fmt.Println(kv.K)
 	}
 
 	return base, nil

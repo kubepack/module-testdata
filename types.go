@@ -81,7 +81,7 @@ type Action struct {
 	ValueOverrides []LoadValue `json:"overrideValues"`
 
 	// https://github.com/tamalsaha/kstatus-demo
-	ReadinessCriteria *ReadinessCriteria `json:"readiness_criteria"`
+	ReadinessCriteria ReadinessCriteria `json:"readiness_criteria"`
 
 	Prerequisites Prerequisites `json:"prerequisites"`
 }
@@ -91,6 +91,8 @@ type Prerequisites struct {
 }
 
 type ReadinessCriteria struct {
+	Timeout metav1.Duration `json:"timeout"`
+
 	// List objects for which to wait to reconcile using kstatus == Current
 	// Same as helm --wait
 	WaitForReconciled bool `json:"wait_for_reconciled"`

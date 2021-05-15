@@ -2,14 +2,13 @@ package main
 
 import (
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chartutil"
+	"helm.sh/helm/v3/pkg/engine"
 )
 
 type FlowState struct {
 	ReleaseName string
 	Chrt        *chart.Chart
-	Values      map[string]interface{} // Final Values used
-	//
+	Values      chartutil.Values // final values used for rendering
+	Engine      engine.EngineInstance
 }
-
-// release name -> flow state
-var flowStates = map[string]*FlowState{}

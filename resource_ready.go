@@ -16,7 +16,7 @@ var grCRD = schema.GroupResource{
 	Resource: "customresourcedefinitions",
 }
 
-func IsResourceExistsAndReady(dc dynamic.Interface, mapper discovery.ResourceMapper, gvr schema.GroupVersionResource) (bool, error) {
+func IsResourceExistsAndReady(ctx context.Context, dc dynamic.Interface, mapper discovery.ResourceMapper, gvr schema.GroupVersionResource) (bool, error) {
 	exists, err := mapper.ExistsGVR(gvr)
 	if gvr.GroupResource() != grCRD {
 		return exists, err
@@ -26,7 +26,7 @@ func IsResourceExistsAndReady(dc dynamic.Interface, mapper discovery.ResourceMap
 	if err != nil {
 		return false, err
 	}
-	obj, err := dc.Resource(crdGVR).Get(context.TODO(), gvr.GroupResource().String(), metav1.GetOptions{})
+	obj, err := dc.Resource(crdGVR).Get(ctx, gvr.GroupResource().String(), metav1.GetOptions{})
 	if err != nil {
 		return false, err
 	}
