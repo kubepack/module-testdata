@@ -589,13 +589,9 @@ gomodules.xyz/jsonpatch/v2
 gomodules.xyz/jsonpatch/v3
 # gomodules.xyz/orderedmap v0.1.0
 gomodules.xyz/orderedmap
-# gomodules.xyz/password-generator v0.2.6
-gomodules.xyz/password-generator
 # gomodules.xyz/version v0.1.0
 gomodules.xyz/version
 # gomodules.xyz/x v0.0.4
-## explicit
-gomodules.xyz/x/crypto/rand
 gomodules.xyz/x/strings
 # google.golang.org/api v0.36.0 => google.golang.org/api v0.20.0
 google.golang.org/api/googleapi

@@ -7,7 +7,6 @@ require (
 	github.com/gabriel-vasile/mimetype v1.2.0
 	github.com/imdario/mergo v0.3.11
 	github.com/pkg/errors v0.9.1
-	gomodules.xyz/x v0.0.4
 	helm.sh/helm/v3 v3.5.2
 	k8s.io/api v0.21.0
 	k8s.io/apimachinery v0.21.0
