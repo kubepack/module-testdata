@@ -6,6 +6,7 @@ import (
 
 	actionx "github.com/tamalsaha/hell-flow/pkg/action"
 	"github.com/tamalsaha/hell-flow/pkg/lib/action"
+	"github.com/tamalsaha/hell-flow/pkg/values"
 
 	haction "helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -22,7 +23,7 @@ type ChartLocator struct {
 	Version string
 }
 
-func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace string, ref ChartLocator, releaseName string) (kutil.VerbType, error) {
+func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace string, ref ChartLocator, releaseName string, opts values.Options) (kutil.VerbType, error) {
 	helmDriver := "secrets"
 
 	cfg := new(actionx.Configuration)
@@ -43,8 +44,7 @@ func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace strin
 				ChartURL:     ref.URL,
 				ChartName:    ref.Name,
 				Version:      ref.Version,
-				ValuesFile:   "",
-				ValuesPatch:  nil,
+				Values:       opts,
 				DryRun:       false,
 				DisableHooks: false,
 				Replace:      false,
@@ -73,8 +73,7 @@ func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace strin
 			ChartURL:      url,
 			ChartName:     name,
 			Version:       version,
-			ValuesFile:    "",
-			ValuesPatch:   nil,
+			Values:        opts,
 			Install:       false,
 			Devel:         false,
 			Namespace:     namespace,

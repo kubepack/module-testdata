@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/tamalsaha/hell-flow/pkg/lib/action"
+	"github.com/tamalsaha/hell-flow/pkg/values"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -140,11 +141,13 @@ func main() {
 	}
 	i.WithRegistry(lib.DefaultRegistry).
 		WithOptions(action.InstallOptions{
-			ChartURL:     url,
-			ChartName:    name,
-			Version:      version,
-			ValuesFile:   "",
-			ValuesPatch:  nil,
+			ChartURL:  url,
+			ChartName: name,
+			Version:   version,
+			Values: values.Options{
+				ValuesFile:  "",
+				ValuesPatch: nil,
+			},
 			DryRun:       false,
 			DisableHooks: false,
 			Replace:      false,
@@ -179,7 +182,7 @@ func main_install_or_upgrdae() {
 		URL:     url,
 		Name:    name,
 		Version: version,
-	}, name)
+	}, name, values.Options{})
 	if err != nil {
 		klog.Fatal(err)
 	}
