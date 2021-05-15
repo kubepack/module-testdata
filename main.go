@@ -106,7 +106,7 @@ var (
 	version = "0.1.0"
 )
 
-func main() {
+func main__hcart_install() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -162,4 +162,27 @@ func main() {
 		klog.Fatal(err)
 	}
 	klog.Infoln(rel)
+}
+
+func main() {
+	print_yaml()
+
+	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
+		&clientcmd.ConfigOverrides{ClusterInfo: clientcmdapi.Cluster{Server: masterURL}})
+	kubeconfig, err := cc.RawConfig()
+	if err != nil {
+		klog.Fatal(err)
+	}
+	getter := clientcmdutil.NewClientGetter(&kubeconfig)
+
+	vt, err := InstallOrUpgrade(getter, "default", ChartLocator{
+		URL:     url,
+		Name:    name,
+		Version: version,
+	}, name)
+	if err != nil {
+		klog.Fatal(err)
+	}
+	klog.Infof("Chart %s", vt)
 }
