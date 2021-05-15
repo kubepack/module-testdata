@@ -79,7 +79,7 @@ var metadataAccessor = meta.NewAccessor()
 // occurs, a Result will still be returned with the error, containing all
 // resource updates, creations, and deletions that were attempted. These can be
 // used for cleanup or other logging purposes.
-func (c *Client) Update(original, target kube.ResourceList, force bool) (*kube.Result, error) {
+func (c *Client) Update(original_nee_current, target kube.ResourceList, force bool) (*kube.Result, error) {
 	updateErrors := []string{}
 	res := &kube.Result{}
 
@@ -108,7 +108,7 @@ func (c *Client) Update(original, target kube.ResourceList, force bool) (*kube.R
 			return nil
 		}
 
-		originalInfo := original.Get(info)
+		originalInfo := original_nee_current.Get(info)
 		if originalInfo == nil {
 			kind := info.Mapping.GroupVersionKind.Kind
 			return errors.Errorf("no %s with the name %q found", kind, info.Name)
@@ -136,7 +136,7 @@ func (c *Client) Update(original, target kube.ResourceList, force bool) (*kube.R
 		return res, errors.Errorf(strings.Join(updateErrors, " && "))
 	}
 
-	for _, info := range original.Difference(target) {
+	for _, info := range original_nee_current.Difference(target) {
 		c.Log("Deleting %q in %s...", info.Name, info.Namespace)
 
 		if err := info.Get(); err != nil {
