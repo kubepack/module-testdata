@@ -23,10 +23,9 @@ var myflow = &Flow{
 				},
 			},
 			ReadinessCriteria: &ReadinessCriteria{
-				HelmWait:          true,
 				WaitForReconciled: true,
 				// check for installed crd
-				RequiredResources: nil,
+				ResourcesExist: nil,
 				// Wait until LB IP is set
 				WaitFors: []WaitFlags{
 					//{
@@ -101,10 +100,9 @@ var myflow = &Flow{
 				},
 			},
 			ReadinessCriteria: &ReadinessCriteria{
-				HelmWait:          true,
 				WaitForReconciled: true,
 				// check for installed crd
-				RequiredResources: nil,
+				ResourcesExist: nil,
 				// Wait until LB IP is set
 				WaitFors: []WaitFlags{
 					//{

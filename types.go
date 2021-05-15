@@ -91,13 +91,12 @@ type Prerequisites struct {
 }
 
 type ReadinessCriteria struct {
-	HelmWait bool `json:"helm_wait"`
-
 	// List objects for which to wait to reconcile using kstatus == Current
+	// Same as helm --wait
 	WaitForReconciled bool `json:"wait_for_reconciled"`
 
-	RequiredResources []ResourceID `json:"required_resources"`
-	WaitFors          []WaitFlags  `json:"waitFors,omitempty" protobuf:"bytes,9,rep,name=waitFors"`
+	ResourcesExist []ResourceID `json:"required_resources"`
+	WaitFors       []WaitFlags  `json:"waitFors,omitempty" protobuf:"bytes,9,rep,name=waitFors"`
 }
 
 type ChartRef struct {
