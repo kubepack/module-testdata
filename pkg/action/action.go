@@ -35,7 +35,7 @@ import (
 
 // Configuration injects the dependencies that all actions share.
 type Configuration struct {
-	*action.Configuration
+	action.Configuration
 }
 
 // Init initializes the action configuration

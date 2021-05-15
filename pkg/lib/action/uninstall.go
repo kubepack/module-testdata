@@ -55,7 +55,7 @@ func (x *Uninstaller) WithReleaseName(name string) *Uninstaller {
 }
 
 func (x *Uninstaller) Run() (*release.UninstallReleaseResponse, error) {
-	cmd := action.NewUninstall(x.cfg.Configuration)
+	cmd := action.NewUninstall(&x.cfg.Configuration)
 	cmd.DisableHooks = x.opts.DisableHooks
 	cmd.DryRun = x.opts.DryRun
 	cmd.KeepHistory = x.opts.KeepHistory

@@ -58,7 +58,7 @@ func (x *Lister) WithOptions(opts ListOptions) *Lister {
 }
 
 func (x *Lister) Run() ([]*release.Release, error) {
-	cmd := action.NewList(x.cfg.Configuration)
+	cmd := action.NewList(&x.cfg.Configuration)
 	cmd.All = x.opts.All
 	cmd.AllNamespaces = x.opts.Namespace == ""
 	cmd.Sort = x.opts.Sort

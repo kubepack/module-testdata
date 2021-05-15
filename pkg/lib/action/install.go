@@ -88,7 +88,7 @@ func (x *Installer) Run() (*release.Release, error) {
 		return nil, err
 	}
 
-	cmd := action.NewInstall(x.cfg.Configuration)
+	cmd := action.NewInstall(&x.cfg.Configuration)
 	var extraAPIs []string
 
 	cmd.DryRun = x.opts.DryRun

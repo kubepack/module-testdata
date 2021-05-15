@@ -98,7 +98,7 @@ func (x *Upgrader) Run() (*release.Release, error) {
 		return nil, err
 	}
 
-	cmd := action.NewUpgrade(x.cfg.Configuration)
+	cmd := action.NewUpgrade(&x.cfg.Configuration)
 	cmd.Install = x.opts.Install
 	cmd.Devel = x.opts.Devel
 	cmd.Namespace = x.opts.Namespace
