@@ -58,8 +58,8 @@ type DirectedEdge struct {
 type ObjectRef struct {
 	Target       metav1.TypeMeta       `json:"target"`
 	Selector     *metav1.LabelSelector `json:"selector,omitempty"`
-	Name         *string               `json:"name,omitempty"`
-	NameTemplate *string               `json:"nameTemplate,omitempty"`
+	Name         string                `json:"name,omitempty"`
+	NameTemplate string                `json:"nameTemplate,omitempty"`
 	// Namespace always same as Workflow
 }
 

@@ -22,7 +22,7 @@ var myflow = &Flow{
 					{Group: "apps", Version: "v1", Resource: "deployments"},
 				},
 			},
-			ReadinessCriteria: &ReadinessCriteria{
+			ReadinessCriteria: ReadinessCriteria{
 				WaitForReconciled: true,
 				// check for installed crd
 				ResourcesExist: nil,
@@ -71,8 +71,8 @@ var myflow = &Flow{
 									"app.kubernetes.io/instance": "{{ .Release.Name }}",
 								},
 							},
-							Name:         nil,
-							NameTemplate: nil,
+							Name:         "",
+							NameTemplate: "",
 						},
 						Paths: nil,
 					},
@@ -99,7 +99,7 @@ var myflow = &Flow{
 					{Group: "apps", Version: "v1", Resource: "pods"},
 				},
 			},
-			ReadinessCriteria: &ReadinessCriteria{
+			ReadinessCriteria: ReadinessCriteria{
 				WaitForReconciled: true,
 				// check for installed crd
 				ResourcesExist: nil,

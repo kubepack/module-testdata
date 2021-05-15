@@ -190,7 +190,7 @@ func main_install_or_upgrdae() {
 	klog.Infof("Chart %s", vt)
 }
 
-func main() {
+func main____() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -269,4 +269,57 @@ func main() {
 		klog.Fatal(err)
 	}
 	klog.Infoln(rel)
+}
+
+func main_tpllist() {
+	tpls := TemplateList{}
+	tpls.Add("xyz")
+	tpls.Add("abc")
+	fmt.Println(tpls)
+}
+
+func main() {
+	src := metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			"abc": "xyz",
+		},
+		MatchExpressions: []metav1.LabelSelectorRequirement{
+			{
+				Key:      "nodename",
+				Operator: metav1.LabelSelectorOpIn,
+				Values: []string{
+					"node-1",
+					"node-2",
+				},
+			},
+			{
+				Key:      "hostname",
+				Operator: metav1.LabelSelectorOpIn,
+				Values: []string{
+					"host-1",
+					"host-2",
+				},
+			},
+		},
+	}
+
+	var sel metav1.LabelSelector
+	if src.MatchLabels != nil {
+		sel.MatchLabels = make(map[string]string)
+	}
+	for k, v := range src.MatchLabels {
+		sel.MatchLabels[k] = v + "-copy"
+	}
+	if len(src.MatchExpressions) > 0 {
+		sel.MatchExpressions = make([]metav1.LabelSelectorRequirement, 0, len(src.MatchExpressions))
+	}
+	for _, expr := range src.MatchExpressions {
+		ne := expr // src.MatchExpressions[i]
+		ne.Values = make([]string, 0, len(expr.Values))
+		for _, v := range expr.Values {
+			ne.Values = append(ne.Values, v+"-copy")
+		}
+		sel.MatchExpressions = append(sel.MatchExpressions, ne)
+	}
+	fmt.Println(sel)
 }

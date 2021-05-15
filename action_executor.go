@@ -3,17 +3,23 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/tamalsaha/hell-flow/pkg/values"
 
+	"helm.sh/helm/v3/pkg/engine"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/discovery"
+	dynamicfactory "kmodules.xyz/client-go/dynamic/factory"
+	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
+	"kmodules.xyz/resource-metadata/pkg/graph"
 	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
 	"kubepack.dev/kubepack/pkg/lib"
 )
@@ -90,17 +96,114 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		KVPairs:      nil,
 	}
 
-	//for _, v := range e.action.ValueOverrides {
-	//	// v.From.Src
-	//	// v.From.UseRelease
-	//	// v.From.Paths
-	//}
-	//
+	mapper, err := e.ClientGetter.ToRESTMapper()
+	if err != nil {
+		e.err = err
+		return e
+	}
+
+	finder := graph.ObjectFinder{
+		Factory: dynamicfactory.New(e.dc),
+		Mapper:  discovery.NewResourceMapper(mapper),
+	}
+
+	for _, o := range e.action.ValueOverrides {
+		selector := o.From.Src.Selector
+		name := o.From.Src.Name
+
+		if o.From.UseRelease != "" && name == "" {
+			state, ok := e.flowstore[o.From.UseRelease]
+			if !ok {
+				e.err = fmt.Errorf("can't find flow state for release %s", o.From.UseRelease)
+				return e
+			}
+
+			tpl := o.From.Src.NameTemplate
+			if tpl != "" {
+				l := TemplateList{}
+				l.Add(tpl)
+				result, err := state.Engine.Render(l)
+				if err != nil {
+					e.err = err
+					return e
+				}
+				name = TemplateList(result).Get(tpl)
+			} else if o.From.Src.Selector != nil {
+				l := TemplateList{}
+				for _, v := range o.From.Src.Selector.MatchLabels {
+					l.Add(v)
+				}
+				for _, expr := range o.From.Src.Selector.MatchExpressions {
+					for _, v := range expr.Values {
+						l.Add(v)
+					}
+				}
+				l, err = state.Engine.Render(l)
+				if err != nil {
+					e.err = err
+					return e
+				}
+
+				var sel metav1.LabelSelector
+				if o.From.Src.Selector.MatchLabels != nil {
+					sel.MatchLabels = make(map[string]string)
+				}
+				for k, v := range o.From.Src.Selector.MatchLabels {
+					sel.MatchLabels[k] = l.Get(v)
+				}
+				if len(o.From.Src.Selector.MatchExpressions) > 0 {
+					sel.MatchExpressions = make([]metav1.LabelSelectorRequirement, 0, len(o.From.Src.Selector.MatchExpressions))
+				}
+				for _, expr := range o.From.Src.Selector.MatchExpressions {
+					ne := expr
+					ne.Values = make([]string, 0, len(expr.Values))
+					for _, v := range expr.Values {
+						ne.Values = append(ne.Values, l.Get(v))
+					}
+					sel.MatchExpressions = append(sel.MatchExpressions, ne)
+				}
+				selector = &sel
+			}
+
+		}
+
+		obj, err := finder.Locate(&rsapi.ObjectLocator{
+			Src: rsapi.ObjectRef{
+				Target:    o.From.Src.Target,
+				Selector:  selector,
+				Name:      name,
+				Namespace: e.Namespace,
+			},
+			Path: o.From.Paths,
+		}, nil)
+		if err != nil {
+			e.err = err
+			return e
+		}
+		fmt.Println(obj.GetName())
+
+		//for _, kv := range o.Values {
+		//	// kv.Key
+		//	// kv.Path
+		//	// kv.PathTemplate
+		//}
+
+		//o.From.Src
+		//o.From.UseRelease
+		//o.From.Paths
+	}
 
 	vals, err := opts.MergeValues(chrt.Chart)
 	if err != nil {
 		e.err = err
 		return e
+	}
+
+	e.flowstore[e.action.ReleaseName] = &FlowState{
+		ReleaseName: e.action.ReleaseName,
+		Chrt:        chrt.Chart,
+		Values:      vals,
+		Engine:      new(engine.Engine).NewInstance(chrt.Chart, vals), // reuse engine
 	}
 
 	vt, err := InstallOrUpgrade(e.ClientGetter, e.Namespace, ref, e.action.ReleaseName, values.Options{
@@ -227,4 +330,14 @@ func (e AlreadyErrored) Error() string {
 
 func (e AlreadyErrored) Underlying() error {
 	return e.underlying
+}
+
+type TemplateList map[string]string
+
+func (l TemplateList) Add(tpl string) {
+	l[base64.URLEncoding.EncodeToString([]byte(tpl))] = tpl
+}
+
+func (l TemplateList) Get(tpl string) string {
+	return l[base64.URLEncoding.EncodeToString([]byte(tpl))]
 }
