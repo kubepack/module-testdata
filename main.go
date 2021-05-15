@@ -161,5 +161,5 @@ func main() {
 	if err != nil {
 		klog.Fatal(err)
 	}
-	fmt.Println(rel)
+	klog.Infoln(rel)
 }
