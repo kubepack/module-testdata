@@ -58,8 +58,8 @@ var myflow = &Flow{
 			*/
 			ValueOverrides: []LoadValue{
 				{
-					UseRelease: "first",
 					From: ObjectLocator{
+						UseRelease: "first",
 						Src: ObjectRef{
 							Target: metav1.TypeMeta{
 								Kind:       "Pod",

@@ -37,15 +37,15 @@ type KV struct {
 }
 
 type LoadValue struct {
-	// Use the values from that release == action to render templates
-	UseRelease string        `json:"use_release"`
-	From       ObjectLocator `json:"from"`
-	Values     []KV          `json:"values"`
+	From   ObjectLocator `json:"from"`
+	Values []KV          `json:"values"`
 }
 
 type ObjectLocator struct {
-	Src   ObjectRef `json:"src"`
-	Paths []string  `json:"paths"` // sequence of DirectedEdge names
+	// Use the values from that release == action to render templates
+	UseRelease string    `json:"use_release"`
+	Src        ObjectRef `json:"src"`
+	Paths      []string  `json:"paths"` // sequence of DirectedEdge names
 }
 
 type DirectedEdge struct {
