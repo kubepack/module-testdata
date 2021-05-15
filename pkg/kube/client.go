@@ -55,6 +55,11 @@ func (c *Client) Create(resources kube.ResourceList) (*kube.Result, error) {
 }
 
 func (c *Client) Wait(resources kube.ResourceList, timeout time.Duration) error {
+	resources.Filter(func(info *resource.Info) bool {
+		if info.Mapping.GroupVersionKind
+	})
+
+
 	return c.Client.Wait(resources, timeout)
 }
 
