@@ -1,6 +1,8 @@
 package kube
 
 import (
+	"context"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -13,10 +15,18 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/cli-runtime/pkg/resource"
+	clientscheme "k8s.io/client-go/kubernetes/scheme"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	"kmodules.xyz/apply"
+	kutil "kmodules.xyz/client-go"
+	"sigs.k8s.io/cli-utils/pkg/kstatus/polling"
+	"sigs.k8s.io/cli-utils/pkg/kstatus/polling/event"
+	"sigs.k8s.io/cli-utils/pkg/kstatus/status"
+	"sigs.k8s.io/cli-utils/pkg/object"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Client struct {
@@ -54,17 +64,38 @@ func (c *Client) Create(resources kube.ResourceList) (*kube.Result, error) {
 	return &kube.Result{Created: resources}, nil
 }
 
+var jobGK = schema.GroupKind{
+	Group: "batch",
+	Kind:  "Job",
+}
+
 func (c *Client) Wait(resources kube.ResourceList, timeout time.Duration) error {
-	resources.Filter(func(info *resource.Info) bool {
-		if info.Mapping.GroupVersionKind
+	resourcesExceptJobs := resources.Filter(func(info *resource.Info) bool {
+		return info.Mapping.GroupVersionKind.GroupKind() != jobGK
 	})
-
-
-	return c.Client.Wait(resources, timeout)
+	if len(resourcesExceptJobs) > 0 {
+		return c.checkStatusExceptJobs(resourcesExceptJobs, timeout)
+	}
+	return nil
 }
 
 func (c *Client) WaitWithJobs(resources kube.ResourceList, timeout time.Duration) error {
-	return c.Client.WaitWithJobs(resources, timeout)
+	start := time.Now()
+	resourcesExceptJobs := resources.Filter(func(info *resource.Info) bool {
+		return info.Mapping.GroupVersionKind.GroupKind() != jobGK
+	})
+	if len(resourcesExceptJobs) > 0 {
+		err := c.checkStatusExceptJobs(resourcesExceptJobs, timeout)
+		if err != nil {
+			return err
+		}
+	} else if len(resourcesExceptJobs) != len(resources) {
+		resourcesJobs := resources.Filter(func(info *resource.Info) bool {
+			return info.Mapping.GroupVersionKind.GroupKind() == jobGK
+		})
+		return c.Client.WaitWithJobs(resourcesJobs, timeout-time.Since(start))
+	}
+	return nil
 }
 
 func (c *Client) Delete(resources kube.ResourceList) (*kube.Result, []error) {
@@ -228,4 +259,64 @@ func deleteResource(info *resource.Info) error {
 	opts := &metav1.DeleteOptions{PropagationPolicy: &policy}
 	_, err := resource.NewHelper(info.Client, info.Mapping).DeleteWithOptions(info.Namespace, info.Name, opts)
 	return err
+}
+
+// We avoid check jobs because kstatus library does not report Job complete status properly
+// See https://github.com/kubernetes-sigs/cli-utils/issues/350
+func (c *Client) checkStatusExceptJobs(resources kube.ResourceList, timeout time.Duration) error {
+	factory, ok := c.Client.Factory.(cmdutil.Factory)
+	if !ok {
+		return fmt.Errorf("c.Client.Factory is not a cmdutil.Factory")
+	}
+
+	cfg, err := factory.ToRawKubeConfigLoader().ClientConfig()
+	if err != nil {
+		return err
+	}
+	mapper, err := factory.ToRESTMapper()
+	if err != nil {
+		return err
+	}
+	reader, err := client.New(cfg, client.Options{
+		Scheme: clientscheme.Scheme,
+		Mapper: mapper,
+	})
+	if err != nil {
+		return err
+	}
+	poller := polling.NewStatusPoller(reader, mapper)
+
+	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
+	defer cancel()
+
+	for _, r := range resources {
+		if ctx.Err() == context.DeadlineExceeded {
+			break
+		}
+
+		objs := []object.ObjMetadata{
+			{
+				Name:      r.Name,
+				Namespace: r.Namespace,
+				GroupKind: r.Mapping.GroupVersionKind.GroupKind(),
+			},
+		}
+		ch := poller.Poll(ctx, objs, polling.Options{
+			PollInterval: kutil.RetryInterval,
+			UseCache:     false,
+		})
+		for ev := range ch {
+			if ev.EventType == event.ErrorEvent {
+				return fmt.Errorf("status polling failed, reason: %v", ev.Error)
+			}
+			if ev.Resource.Status == status.CurrentStatus {
+				break
+			}
+		}
+	}
+
+	if ctx.Err() == context.DeadlineExceeded {
+		return ctx.Err()
+	}
+	return nil
 }

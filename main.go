@@ -9,7 +9,6 @@ import (
 
 	"github.com/tamalsaha/hell-flow/pkg/lib/action"
 
-	"gomodules.xyz/x/crypto/rand"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -106,7 +105,7 @@ var (
 	version = "0.1.0"
 )
 
-func main__hcart_install() {
+func main() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -153,7 +152,7 @@ func main__hcart_install() {
 			Devel:        false,
 			Timeout:      0,
 			Namespace:    namespace,
-			ReleaseName:  rand.WithUniqSuffix(name),
+			ReleaseName:  name,
 			Atomic:       false,
 			SkipCRDs:     false,
 		})
@@ -164,7 +163,7 @@ func main__hcart_install() {
 	klog.Infoln(rel)
 }
 
-func main() {
+func main_install_or_upgrdae() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(

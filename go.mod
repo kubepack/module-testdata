@@ -23,6 +23,7 @@ require (
 	kubepack.dev/lib-helm v0.2.4-0.20210504075710-8653e4557a39
 	sigs.k8s.io/application v0.8.2-0.20200306235134-f10d9ca8abd4
 	sigs.k8s.io/cli-utils v0.25.0
+	sigs.k8s.io/controller-runtime v0.9.0-beta.2
 	sigs.k8s.io/yaml v1.2.0
 )
 
