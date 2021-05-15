@@ -14,6 +14,8 @@ require (
 	k8s.io/cli-runtime v0.21.0
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog/v2 v2.8.0
+	k8s.io/kubectl v0.21.0
+	kmodules.xyz/apply v0.0.0-20210503080849-eb226c295465
 	kmodules.xyz/client-go v0.0.0-20210514054158-27e164b43474
 	kmodules.xyz/resource-metadata v0.5.5-0.20210514060730-df2b810e12e6
 	kubepack.dev/kubepack v0.3.4-0.20210513213410-fab49d312392

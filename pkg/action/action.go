@@ -42,7 +42,10 @@ type Configuration struct {
 func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespace, helmDriver string, log action.DebugLog) error {
 	//kc2 := kube.New(getter)
 	//kc2.Log = log
-	kc := kubex.New(getter, log)
+	kc, err := kubex.New(getter, log)
+	if err != nil {
+		return err
+	}
 
 	lazyClient := &lazyClient{
 		namespace: namespace,
