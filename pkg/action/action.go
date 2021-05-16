@@ -21,16 +21,15 @@ import (
 	"os"
 
 	kubex "github.com/tamalsaha/hell-flow/pkg/kube"
+	driver2 "github.com/tamalsaha/hell-flow/pkg/storage/driver"
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/storage"
 	"helm.sh/helm/v3/pkg/storage/driver"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
-	driver2 "kubepack.dev/lib-app/pkg/storage/driver"
+	disco_util "kmodules.xyz/client-go/discovery"
 	appcs "sigs.k8s.io/application/client/clientset/versioned"
 )
 
@@ -78,10 +77,14 @@ func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespac
 		if err != nil {
 			return err
 		}
+		mapper, err := getter.ToRESTMapper()
+		if err != nil {
+			return err
+		}
 		d := driver2.NewApplications(
 			newApplicationClient(lazyClient),
 			dynamic.NewForConfigOrDie(config),
-			memory.NewMemCacheClient(kubernetes.NewForConfigOrDie(config).Discovery()),
+			disco_util.NewResourceMapper(mapper),
 		)
 		d.Log = log
 		store = storage.Init(d)

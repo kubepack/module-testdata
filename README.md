@@ -47,3 +47,14 @@ helm repo update
 	lbs.set("status", rls.Info.Status.String())
 	lbs.set("version", strconv.Itoa(rls.Version))
 ```
+
+** Chart Annotations **
+
+- https://artifacthub.io/docs/topics/annotations/helm/
+- https://github.com/helm/helm/blob/v3.5.4/pkg/chart/metadata.go#L71-L73
+
+```
+	// Annotations are additional mappings uninterpreted by Helm,
+	// made available for inspection by other applications.
+	Annotations map[string]string `json:"annotations,omitempty"`
+```

@@ -76,12 +76,8 @@ github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd h1:sjQovDkwrZp
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/Masterminds/goutils v1.1.1 h1:5nUrii3FMTL5diU80unEVvNevw1nH4+ZV4DSLVJLSYI=
 github.com/Masterminds/goutils v1.1.1/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
-github.com/Masterminds/semver v1.5.0 h1:H65muMkzWKEuNDnfl9d70GUjFniHKHRbFPGBuZ3QEww=
-github.com/Masterminds/semver v1.5.0/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
 github.com/Masterminds/semver/v3 v3.1.1 h1:hLg3sBzpNErnxhQtUy/mmLR2I9foDujNK030IGemrRc=
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
-github.com/Masterminds/sprig v2.22.0+incompatible h1:z4yfnGrZ7netVz+0EDJ0Wi+5VZCSYp4Z0m2dk6cEM60=
-github.com/Masterminds/sprig v2.22.0+incompatible/go.mod h1:y6hNFY5UBTIWBxnzTeuNhlNS5hqE0NB0E6fgfo2Br3o=
 github.com/Masterminds/sprig/v3 v3.2.2 h1:17jRggJu518dr3QaafizSXOjKYp94wKfABxUmyxvxX8=
 github.com/Masterminds/sprig/v3 v3.2.2/go.mod h1:UoaO7Yp8KlPnJIYWTFkMaqPUYKTfGFPhxNuwnnxkKlk=
 github.com/Masterminds/squirrel v1.5.0 h1:JukIZisrUXadA9pl3rMkjhiamxiB0cXiu+HGp/Y8cY8=
@@ -1428,7 +1424,6 @@ kmodules.xyz/openshift v0.0.0-20210504040454-a3ddfc579bb7/go.mod h1:T6jBAUCoXuGZ
 kmodules.xyz/prober v0.0.0-20210504042421-eca494e828bc/go.mod h1:Asmxrv1or+IbQf8U/B/5I/YFcnpMhyM6DxaByMWwDTQ=
 kmodules.xyz/prober v0.0.0-20210504215326-2e406706b970/go.mod h1:Asmxrv1or+IbQf8U/B/5I/YFcnpMhyM6DxaByMWwDTQ=
 kmodules.xyz/resource-metadata v0.5.5-0.20210513195540-42f3f7e2e71c/go.mod h1:N/GoWtmw2vU5a8ig6/UpbXminyx8g/NKKauoEupXbB4=
-kmodules.xyz/resource-metadata v0.5.5-0.20210514060730-df2b810e12e6/go.mod h1:pBRpHjzUaveYQ1HEXDo+pZwtxgqoTtR3ls9qefZdwNs=
 kmodules.xyz/resource-metadata v0.5.5-0.20210516011544-f7fae593b6ca h1:eHnI7STvgolrTEB3rLZriSpXcxUhZmWbyPxu+CKQBXM=
 kmodules.xyz/resource-metadata v0.5.5-0.20210516011544-f7fae593b6ca/go.mod h1:pBRpHjzUaveYQ1HEXDo+pZwtxgqoTtR3ls9qefZdwNs=
 kmodules.xyz/webhook-runtime v0.0.0-20210504042742-3a9911e3dcdc/go.mod h1:6XuoN0H+Od+12aEywFaQnPJ3DYfJZE+Sx0MB4dzWI5Q=
@@ -1437,8 +1432,8 @@ kubedb.dev/apimachinery v0.18.1-0.20210506003355-e982e5902ad2/go.mod h1:MV2Q4muy
 kubepack.dev/chart-doc-gen v0.4.0/go.mod h1:7/YwWgQwKQZIazjAMNuk7vLTjJHT5ZP+Z4rglDjx1PQ=
 kubepack.dev/kubepack v0.3.4-0.20210513213410-fab49d312392 h1:+8863EPxRBTPtQ8hciczNuC2tOPMEOb5yXR2XdyXtik=
 kubepack.dev/kubepack v0.3.4-0.20210513213410-fab49d312392/go.mod h1:YfB6an75TUTQHDSEVUdyOtLW54AKxgeGwi09fjjHU+A=
-kubepack.dev/lib-app v0.0.5-0.20210514160419-5e94925faf06 h1:2pB8OAc+nVsTnNiYETtqcFn+/S9LDzXdXWfgYM6YtNA=
-kubepack.dev/lib-app v0.0.5-0.20210514160419-5e94925faf06/go.mod h1:iuu1unDG08Owe4lsrZbGqb2JqsZUPZnsDjeSC3HEMBQ=
+kubepack.dev/lib-app v0.0.5-0.20210516044706-b0679f4f1d6e h1:6wz3TCE9sXXqt7IXe5RKMnVDkrDeeNXyyeftKSO+Now=
+kubepack.dev/lib-app v0.0.5-0.20210516044706-b0679f4f1d6e/go.mod h1:Xhc9t9XJDmMrb3qqlQGIjfxl3AqLtK7T8FjFEroorrY=
 kubepack.dev/lib-helm v0.2.4-0.20210504075710-8653e4557a39 h1:JWdEkolxsBljA7IK+tA8aMBCwos2puB5vBm6z/eQq3U=
 kubepack.dev/lib-helm v0.2.4-0.20210504075710-8653e4557a39/go.mod h1:9dtGvzqvID3nUCpS99BegcMKVBTB8lnp2pm253qSsUc=
 modernc.org/cc v1.0.0/go.mod h1:1Sk4//wdnYJiUIxnW8ddKpaOJCF37yAdqYnkxUpaYxw=

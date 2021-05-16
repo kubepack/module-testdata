@@ -28,9 +28,8 @@ import (
 	rspb "helm.sh/helm/v3/pkg/release"
 	helmtime "helm.sh/helm/v3/pkg/time"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/restmapper"
+	"kmodules.xyz/client-go/discovery"
 	"kubepack.dev/kubepack/apis"
 	"kubepack.dev/kubepack/pkg/lib"
 	appapi "kubepack.dev/lib-app/api/v1alpha1"
@@ -139,7 +138,7 @@ func toAssemblyPhase(status release.Status) v1beta1.ApplicationAssemblyPhase {
 // decodeRelease decodes the bytes of data into a release
 // type. Data must contain a base64 encoded gzipped string of a
 // valid release, otherwise an error is returned.
-func decodeReleaseFromApp(app *v1beta1.Application, di dynamic.Interface, cl discovery.CachedDiscoveryInterface) (*rspb.Release, error) {
+func decodeReleaseFromApp(app *v1beta1.Application, di dynamic.Interface, cl discovery.ResourceMapper) (*rspb.Release, error) {
 	var rls rspb.Release
 
 	rls.Name = app.Labels["name"]
@@ -176,8 +175,7 @@ func decodeReleaseFromApp(app *v1beta1.Application, di dynamic.Interface, cl dis
 		Name:      rls.Name,
 		Namespace: rls.Namespace,
 	}
-	mapper := restmapper.NewDeferredDiscoveryRESTMapper(cl)
-	tpl, err := editor.EditorChartValueManifest(app, mapper, di, rlm, rls.Chart)
+	tpl, err := editor.EditorChartValueManifest(app, cl, di, rlm, rls.Chart)
 	if err != nil {
 		return nil, err
 	}

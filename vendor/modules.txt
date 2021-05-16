@@ -1238,11 +1238,10 @@ kubepack.dev/kubepack/apis/kubepack
 kubepack.dev/kubepack/apis/kubepack/v1alpha1
 kubepack.dev/kubepack/crds
 kubepack.dev/kubepack/pkg/lib
-# kubepack.dev/lib-app v0.0.5-0.20210514160419-5e94925faf06
+# kubepack.dev/lib-app v0.0.5-0.20210516044706-b0679f4f1d6e
 ## explicit
 kubepack.dev/lib-app/api/v1alpha1
 kubepack.dev/lib-app/pkg/editor
-kubepack.dev/lib-app/pkg/storage/driver
 # kubepack.dev/lib-helm v0.2.4-0.20210504075710-8653e4557a39
 ## explicit
 kubepack.dev/lib-helm/action
