@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/gabriel-vasile/mimetype v1.2.0
+	github.com/gobuffalo/flect v0.2.2
 	github.com/imdario/mergo v0.3.11
 	github.com/pkg/errors v0.9.1
 	helm.sh/helm/v3 v3.5.2

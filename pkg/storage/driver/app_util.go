@@ -17,24 +17,29 @@ limitations under the License.
 package driver
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/gobuffalo/flect"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/release"
 	rspb "helm.sh/helm/v3/pkg/release"
 	helmtime "helm.sh/helm/v3/pkg/time"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"kmodules.xyz/client-go/discovery"
+	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/parser"
-	"kubepack.dev/kubepack/apis"
 	appapi "kubepack.dev/lib-app/api/v1alpha1"
-	"kubepack.dev/lib-app/pkg/editor"
 	"sigs.k8s.io/application/api/app/v1beta1"
 	"sigs.k8s.io/yaml"
 )
@@ -196,56 +201,258 @@ func toAssemblyPhase(status release.Status) v1beta1.ApplicationAssemblyPhase {
 // decodeRelease decodes the bytes of data into a release
 // type. Data must contain a base64 encoded gzipped string of a
 // valid release, otherwise an error is returned.
-func decodeReleaseFromApp(app *v1beta1.Application, releases []string, di dynamic.Interface, cl discovery.ResourceMapper) ([]*rspb.Release, error) {
-	var rls rspb.Release
-
-	rls.Name = app.Labels["name"]
-	rls.Namespace = app.Namespace
-	rls.Version, _ = strconv.Atoi(app.Labels["version"])
-
-	// This is not needed or used from release
-	//chartURL, ok := app.Annotations[apis.LabelChartURL]
-	//if !ok {
-	//	return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartURL, app.Namespace, app.Name)
-	//}
-	//chartName, ok := app.Annotations[apis.LabelChartName]
-	//if !ok {
-	//	return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartName, app.Namespace, app.Name)
-	//}
-	//chartVersion, ok := app.Annotations[apis.LabelChartVersion]
-	//if !ok {
-	//	return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartVersion, app.Namespace, app.Name)
-	//}
-	//chrt, err := lib.DefaultRegistry.GetChart(chartURL, chartName, chartVersion)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//rls.Chart = chrt.Chart
-
-	rls.Info = &release.Info{
-		Description: app.Spec.Descriptor.Description,
-		Status:      release.Status(app.Labels["status"]),
-		Notes:       app.Spec.Descriptor.Notes,
+func decodeReleaseFromApp(app *v1beta1.Application, rlsNames []string, di dynamic.Interface, cl discovery.ResourceMapper) ([]*rspb.Release, error) {
+	if len(rlsNames) == 0 {
+		rlsNames = relevantReleases(app.Labels)
 	}
-	rls.Info.FirstDeployed, _ = helmtime.Parse(time.RFC3339, app.Annotations[apis.LabelChartFirstDeployed])
-	rls.Info.LastDeployed, _ = helmtime.Parse(time.RFC3339, app.Annotations[apis.LabelChartLastDeployed])
 
-	rlm := appapi.ObjectMeta{
-		Name:      rls.Name,
-		Namespace: rls.Namespace,
+	releases := make([]*rspb.Release, 0, len(rlsNames))
+
+	for _, rlsName := range rlsNames {
+		var rls rspb.Release
+
+		rls.Name = app.Labels["release-name.meta.x-helm.dev/"+rlsName]
+		rls.Namespace = app.Namespace
+		rls.Version, _ = strconv.Atoi(app.Labels["version.meta.x-helm.dev/"+rlsName])
+
+		// This is not needed or used from release
+		//chartURL, ok := app.Annotations[apis.LabelChartURL]
+		//if !ok {
+		//	return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartURL, app.Namespace, app.Name)
+		//}
+		//chartName, ok := app.Annotations[apis.LabelChartName]
+		//if !ok {
+		//	return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartName, app.Namespace, app.Name)
+		//}
+		//chartVersion, ok := app.Annotations[apis.LabelChartVersion]
+		//if !ok {
+		//	return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartVersion, app.Namespace, app.Name)
+		//}
+		//chrt, err := lib.DefaultRegistry.GetChart(chartURL, chartName, chartVersion)
+		//if err != nil {
+		//	return nil, err
+		//}
+		//rls.Chart = chrt.Chart
+
+		rls.Info = &release.Info{
+			Description: app.Spec.Descriptor.Description,
+			Status:      release.Status(app.Labels["status.meta.x-helm.dev/"+rlsName]),
+			Notes:       app.Spec.Descriptor.Notes,
+		}
+		rls.Info.FirstDeployed, _ = helmtime.Parse(time.RFC3339, app.Annotations["first-deployed.meta.x-helm.dev/"+rlsName])
+		rls.Info.LastDeployed, _ = helmtime.Parse(time.RFC3339, app.Annotations["last-deployed.meta.x-helm.dev/"+rlsName])
+
+		rlm := appapi.ObjectMeta{
+			Name:      rls.Name,
+			Namespace: rls.Namespace,
+		}
+		tpl, err := EditorChartValueManifest(app, cl, di, rlm, rls.Chart)
+		if err != nil {
+			return nil, err
+		}
+
+		rls.Manifest = string(tpl.Manifest)
+
+		if rls.Chart == nil {
+			rls.Chart = &chart.Chart{}
+		}
+		rls.Chart.Values = tpl.Values.Object
+		rls.Config = map[string]interface{}{}
+
+		releases = append(releases, &rls)
 	}
-	tpl, err := editor.EditorChartValueManifest(app, cl, di, rlm, rls.Chart)
+
+	return releases, nil
+}
+
+func EditorChartValueManifest(app *v1beta1.Application, mapper discovery.ResourceMapper, dc dynamic.Interface, mt appapi.ObjectMeta, chrt *chart.Chart) (*appapi.EditorTemplate, error) {
+	selector, err := metav1.LabelSelectorAsSelector(app.Spec.Selector)
 	if err != nil {
 		return nil, err
 	}
+	labelSelector := selector.String()
 
-	rls.Manifest = string(tpl.Manifest)
+	var buf bytes.Buffer
+	resourceMap := map[string]interface{}{}
 
-	if rls.Chart == nil {
-		rls.Chart = &chart.Chart{}
+	// detect apiVersion from defaultValues in chart
+	gkToVersion := map[metav1.GroupKind]string{}
+	for rsKey, x := range chrt.Values["resources"].(map[string]interface{}) {
+		var tm metav1.TypeMeta
+
+		err = meta_util.DecodeObject(x.(map[string]interface{}), &tm)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse TypeMeta for rsKey %s in chart name=%s version=%s values", rsKey, chrt.Name(), chrt.Metadata.Version)
+		}
+		gv, err := schema.ParseGroupVersion(tm.APIVersion)
+		if err != nil {
+			return nil, err
+		}
+		gkToVersion[metav1.GroupKind{
+			Group: gv.Group,
+			Kind:  tm.Kind,
+		}] = gv.Version
 	}
-	rls.Chart.Values = tpl.Values.Object
-	rls.Config = map[string]interface{}{}
 
-	return &rls, nil
+	var resources []*unstructured.Unstructured
+	for _, gk := range app.Spec.ComponentGroupKinds {
+		version, ok := gkToVersion[gk]
+		if !ok {
+			return nil, fmt.Errorf("failed to detect version for GK %#v in chart name=%s version=%s values", gk, chrt.Name(), chrt.Metadata.Version)
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   gk.Group,
+			Version: version,
+			Kind:    gk.Kind,
+		}
+		gvr, err := mapper.GVR(gvk)
+		if err != nil {
+			return nil, fmt.Errorf("failed to detect GVR for gvk %v, reason %v", gvk, err)
+		}
+		namespaced, err := mapper.IsNamespaced(gvr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to detect if gvr %v is namespaced, reason %v", gvr, err)
+		}
+		var rc dynamic.ResourceInterface
+		if namespaced {
+			rc = dc.Resource(gvr).Namespace(mt.Namespace)
+		} else {
+			rc = dc.Resource(gvr)
+		}
+
+		list, err := rc.List(context.TODO(), metav1.ListOptions{
+			LabelSelector: labelSelector,
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, obj := range list.Items {
+			// remove status
+			delete(obj.Object, "status")
+
+			resources = append(resources, &obj)
+
+			buf.WriteString("\n---\n")
+			data, err := yaml.Marshal(&obj)
+			if err != nil {
+				return nil, err
+			}
+			buf.Write(data)
+
+			rsKey, err := ResourceKey(obj.GetAPIVersion(), obj.GetKind(), mt.Name, obj.GetName())
+			if err != nil {
+				return nil, err
+			}
+			if _, ok := resourceMap[rsKey]; ok {
+				return nil, fmt.Errorf("duplicate resource key %s for application %s/%s", rsKey, app.Namespace, app.Name)
+			}
+			resourceMap[rsKey] = &obj
+		}
+	}
+
+	s1map := map[string]int{}
+	s2map := map[string]int{}
+	s3map := map[string]int{}
+	for _, obj := range resources {
+		s1, s2, s3 := ResourceFilename(obj.GetAPIVersion(), obj.GetKind(), mt.Name, obj.GetName())
+		if v, ok := s1map[s1]; !ok {
+			s1map[s1] = 1
+		} else {
+			s1map[s1] = v + 1
+		}
+		if v, ok := s2map[s2]; !ok {
+			s2map[s2] = 1
+		} else {
+			s2map[s2] = v + 1
+		}
+		if v, ok := s3map[s3]; !ok {
+			s3map[s3] = 1
+		} else {
+			s3map[s3] = v + 1
+		}
+	}
+
+	rsfiles := make([]appapi.ResourceObject, 0, len(resources))
+	for _, obj := range resources {
+		s1, s2, s3 := ResourceFilename(obj.GetAPIVersion(), obj.GetKind(), mt.Name, obj.GetName())
+		name := s1
+		if s1map[s1] > 1 {
+			if s2map[s2] > 1 {
+				name = s3
+			} else {
+				name = s2
+			}
+		}
+		rsfiles = append(rsfiles, appapi.ResourceObject{
+			Filename: name,
+			Data:     obj,
+		})
+	}
+
+	tpl := appapi.EditorTemplate{
+		Manifest: buf.Bytes(),
+		Values: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"metadata": map[string]interface{}{
+					"resource": chrt.Values["metadata"].(map[string]interface{})["resource"],
+					"release":  mt,
+				},
+				"resources": resourceMap,
+			},
+		},
+		Resources: rsfiles,
+	}
+
+	return &tpl, nil
+}
+
+func ResourceKey(apiVersion, kind, chartName, name string) (string, error) {
+	gv, err := schema.ParseGroupVersion(apiVersion)
+	if err != nil {
+		return "", err
+	}
+
+	groupPrefix := gv.Group
+	groupPrefix = strings.TrimSuffix(groupPrefix, ".k8s.io")
+	groupPrefix = strings.TrimSuffix(groupPrefix, ".kubernetes.io")
+	//groupPrefix = strings.TrimSuffix(groupPrefix, ".x-k8s.io")
+	groupPrefix = strings.Replace(groupPrefix, ".", "_", -1)
+	groupPrefix = flect.Pascalize(groupPrefix)
+
+	var nameSuffix string
+	nameSuffix = strings.TrimPrefix(name, chartName)
+	// we can't use - as separator since Go template does not like it
+	// Go template throws an error like "unexpected bad character U+002D '-' in with"
+	// ref: https://github.com/gohugoio/hugo/issues/1474
+	nameSuffix = flect.Underscore(nameSuffix)
+	nameSuffix = strings.Trim(nameSuffix, "_")
+
+	result := flect.Camelize(groupPrefix + kind)
+	if len(nameSuffix) > 0 {
+		result += "_" + nameSuffix
+	}
+	return result, nil
+}
+
+func ResourceFilename(apiVersion, kind, chartName, name string) (string, string, string) {
+	gv, err := schema.ParseGroupVersion(apiVersion)
+	if err != nil {
+		panic(err)
+	}
+
+	groupPrefix := gv.Group
+	groupPrefix = strings.TrimSuffix(groupPrefix, ".k8s.io")
+	groupPrefix = strings.TrimSuffix(groupPrefix, ".kubernetes.io")
+	//groupPrefix = strings.TrimSuffix(groupPrefix, ".x-k8s.io")
+	groupPrefix = strings.Replace(groupPrefix, ".", "_", -1)
+	groupPrefix = flect.Pascalize(groupPrefix)
+
+	var nameSuffix string
+	nameSuffix = strings.TrimPrefix(name, chartName)
+	nameSuffix = strings.Replace(nameSuffix, ".", "-", -1)
+	nameSuffix = strings.Trim(nameSuffix, "-")
+	nameSuffix = flect.Pascalize(nameSuffix)
+
+	return flect.Underscore(kind), flect.Underscore(kind + nameSuffix), flect.Underscore(groupPrefix + kind + nameSuffix)
 }
