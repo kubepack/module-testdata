@@ -3,12 +3,14 @@ package values
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/strvals"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
 )
@@ -107,8 +109,10 @@ func (opts *Options) MergeValues(chrt *chart.Chart) (map[string]interface{}, err
 	}
 
 	for _, kv := range opts.KVPairs {
-		// unstructured.SetNestedField()
-		fmt.Println(kv.K)
+		err := unstructured.SetNestedField(base, kv.V, strings.Split(kv.K, ".")...)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return base, nil

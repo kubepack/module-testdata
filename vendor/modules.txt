@@ -396,6 +396,9 @@ github.com/peterbourgon/diskv
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.47.0 => github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.47.0
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1
 # github.com/prometheus/client_golang v1.9.0 => github.com/prometheus/client_golang v1.10.0
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
@@ -592,6 +595,8 @@ gomodules.xyz/jsonpath
 gomodules.xyz/jsonpath/third_party/forked/golang/template
 # gomodules.xyz/orderedmap v0.1.0
 gomodules.xyz/orderedmap
+# gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209
+gomodules.xyz/pointer
 # gomodules.xyz/version v0.1.0
 gomodules.xyz/version
 # gomodules.xyz/x v0.0.4
@@ -852,6 +857,7 @@ k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextension
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/api/meta
+k8s.io/apimachinery/pkg/api/meta/table
 k8s.io/apimachinery/pkg/api/resource
 k8s.io/apimachinery/pkg/api/validation
 k8s.io/apimachinery/pkg/api/validation/path
@@ -1186,9 +1192,12 @@ kmodules.xyz/apply
 # kmodules.xyz/client-go v0.0.0-20210514054158-27e164b43474
 ## explicit
 kmodules.xyz/client-go
+kmodules.xyz/client-go/api/v1
 kmodules.xyz/client-go/apiextensions
 kmodules.xyz/client-go/apiextensions/v1
 kmodules.xyz/client-go/apiextensions/v1beta1
+kmodules.xyz/client-go/apps/v1
+kmodules.xyz/client-go/core/v1
 kmodules.xyz/client-go/discovery
 kmodules.xyz/client-go/dynamic/factory
 kmodules.xyz/client-go/meta
@@ -1196,7 +1205,15 @@ kmodules.xyz/client-go/tools/clientcache
 kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/client-go/tools/parser
 kmodules.xyz/client-go/tools/wait
-# kmodules.xyz/resource-metadata v0.5.5-0.20210514060730-df2b810e12e6
+# kmodules.xyz/custom-resources v0.0.0-20210504034124-54c54fcdb690
+kmodules.xyz/custom-resources/apis/appcatalog
+kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
+kmodules.xyz/custom-resources/crds
+# kmodules.xyz/monitoring-agent-api v0.0.0-20210504040241-261c2428d207
+kmodules.xyz/monitoring-agent-api/api/v1
+# kmodules.xyz/offshoot-api v0.0.0-20210504040651-7951e351f0f5
+kmodules.xyz/offshoot-api/api/v1
+# kmodules.xyz/resource-metadata v0.5.5-0.20210516011544-f7fae593b6ca
 ## explicit
 kmodules.xyz/resource-metadata/apis/meta
 kmodules.xyz/resource-metadata/apis/meta/v1alpha1
@@ -1205,6 +1222,15 @@ kmodules.xyz/resource-metadata/hub
 kmodules.xyz/resource-metadata/hub/resourceclasses
 kmodules.xyz/resource-metadata/hub/resourcedescriptors
 kmodules.xyz/resource-metadata/pkg/graph
+kmodules.xyz/resource-metadata/pkg/tableconvertor
+kmodules.xyz/resource-metadata/pkg/tableconvertor/printers
+# kubedb.dev/apimachinery v0.18.1-0.20210506003355-e982e5902ad2
+kubedb.dev/apimachinery/apis
+kubedb.dev/apimachinery/apis/catalog
+kubedb.dev/apimachinery/apis/catalog/v1alpha1
+kubedb.dev/apimachinery/apis/kubedb
+kubedb.dev/apimachinery/apis/kubedb/v1alpha2
+kubedb.dev/apimachinery/crds
 # kubepack.dev/kubepack v0.3.4-0.20210513213410-fab49d312392
 ## explicit
 kubepack.dev/kubepack/apis

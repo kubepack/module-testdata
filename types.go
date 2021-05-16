@@ -23,7 +23,8 @@ type KV struct {
 	// to the primary identifier column to assist in clients identifying column is the resource name.
 	// See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#data-types for more.
 	// +optional
-	Format string `json:"format,omitempty"`
+	// Format string `json:"format,omitempty"`
+
 	// PathTemplate is a Go text template that will be evaluated to determine cell value.
 	// Users can use JSONPath expression to extract nested fields and apply template functions from Masterminds/sprig library.
 	// The template function for JSON path is called `jp`.

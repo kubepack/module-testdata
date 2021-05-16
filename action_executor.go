@@ -6,12 +6,14 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/tamalsaha/hell-flow/pkg/values"
 
 	"helm.sh/helm/v3/pkg/engine"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
@@ -20,6 +22,7 @@ import (
 	dynamicfactory "kmodules.xyz/client-go/dynamic/factory"
 	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 	"kmodules.xyz/resource-metadata/pkg/graph"
+	"kmodules.xyz/resource-metadata/pkg/tableconvertor"
 	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
 	"kubepack.dev/kubepack/pkg/lib"
 )
@@ -182,15 +185,51 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		}
 		fmt.Println(obj.GetName())
 
-		//for _, kv := range o.Values {
-		//	// kv.Key
-		//	// kv.Path
-		//	// kv.PathTemplate
-		//}
-
-		//o.From.Src
-		//o.From.UseRelease
-		//o.From.Paths
+		var buf bytes.Buffer
+		for _, kv := range o.Values {
+			//kv.Type
+			//kv.Format
+			//kv.Key
+			//kv.Path
+			//kv.PathTemplate
+			if kv.PathTemplate != "" {
+				tpl, err := template.New("").Funcs(tableconvertor.TxtFuncMap()).Parse(kv.PathTemplate)
+				if err != nil {
+					e.err = fmt.Errorf("failed to parse path template %s, reason: %v", kv.PathTemplate, err)
+					return e
+				}
+				err = tpl.Execute(&buf, obj)
+				if err != nil {
+					e.err = fmt.Errorf("failed to resolve path template %s, reason: %v", kv.PathTemplate, err)
+					return e
+				}
+				switch kv.Type {
+				case "string":
+					opts.StringValues = append(opts.StringValues, fmt.Sprintf("%s=%v", kv.Key, buf.String()))
+				case "nil", "null":
+					// See https://helm.sh/docs/chart_template_guide/values_files/#deleting-a-default-key
+					opts.Values = append(opts.Values, fmt.Sprintf("%s=null", kv.Key))
+				default:
+					opts.Values = append(opts.Values, fmt.Sprintf("%s=%v", kv.Key, buf.String()))
+				}
+				buf.Reset()
+			} else if kv.Path != "" {
+				path := strings.Trim(kv.Path, ".")
+				v, ok, err := unstructured.NestedFieldNoCopy(obj.UnstructuredContent(), strings.Split(path, ".")...)
+				if err != nil {
+					e.err = err
+					return e
+				}
+				if !ok {
+					// this is the standard behavior Helm template follows
+					v = ""
+				}
+				opts.KVPairs = append(opts.KVPairs, values.KV{
+					K: kv.Key,
+					V: v,
+				})
+			}
+		}
 	}
 
 	vals, err := opts.MergeValues(chrt.Chart)

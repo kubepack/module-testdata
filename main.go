@@ -12,6 +12,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
@@ -278,7 +279,7 @@ func main_tpllist() {
 	fmt.Println(tpls)
 }
 
-func main() {
+func main__copy_label_selector() {
 	src := metav1.LabelSelector{
 		MatchLabels: map[string]string{
 			"abc": "xyz",
@@ -322,4 +323,23 @@ func main() {
 		sel.MatchExpressions = append(sel.MatchExpressions, ne)
 	}
 	fmt.Println(sel)
+}
+
+// must use int64
+func main() {
+	u := unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"a": map[string]interface{}{
+				"b": int64(2),
+			},
+		},
+	}
+	override := map[string]interface{}{
+		"b": int64(20),
+		"c": "c3",
+	}
+	err := unstructured.SetNestedField(u.Object, override, "a")
+	if err != nil {
+		panic(err)
+	}
 }
