@@ -80,14 +80,12 @@ var myflow = &Flow{
 						{
 							Key:          "first.name",
 							Type:         "string",
-							Format:       "",
 							PathTemplate: ``,
 							Path:         ".metadata.name",
 						},
 						{
 							Key:          "first.port",
 							Type:         "string",
-							Format:       "",
 							PathTemplate: `{{ jp "{.spec.containers[0].ports[0].containerPort}" . }}`,
 							Path:         "",
 						},
