@@ -39,7 +39,7 @@ import (
 var _ driver.Driver = (*Applications)(nil)
 
 // ApplicationsDriverName is the string name of the driver.
-const ApplicationsDriverName = "Application"
+const ApplicationsDriverName = "Kubepack" // changed from Application
 
 // Applications is a wrapper around an implementation of a kubernetes
 // ApplicationsInterface.
