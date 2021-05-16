@@ -196,7 +196,7 @@ func toAssemblyPhase(status release.Status) v1beta1.ApplicationAssemblyPhase {
 // decodeRelease decodes the bytes of data into a release
 // type. Data must contain a base64 encoded gzipped string of a
 // valid release, otherwise an error is returned.
-func decodeReleaseFromApp(app *v1beta1.Application, di dynamic.Interface, cl discovery.ResourceMapper) (*rspb.Release, error) {
+func decodeReleaseFromApp(app *v1beta1.Application, releases []string, di dynamic.Interface, cl discovery.ResourceMapper) ([]*rspb.Release, error) {
 	var rls rspb.Release
 
 	rls.Name = app.Labels["name"]
