@@ -27,9 +27,12 @@ import (
 	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/storage"
 	"helm.sh/helm/v3/pkg/storage/driver"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
+	"kmodules.xyz/client-go/apiextensions"
 	disco_util "kmodules.xyz/client-go/discovery"
+	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
 	appcs "sigs.k8s.io/application/client/clientset/versioned"
 )
 
@@ -50,6 +53,23 @@ func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespac
 		kc = client
 		factory = client.Factory
 	default:
+		// register Application CRD
+		crds := []*apiextensions.CustomResourceDefinition{
+			v1alpha1.ApplicationCustomResourceDefinition(),
+		}
+		restcfg, err := getter.ToRESTConfig()
+		if err != nil {
+			return fmt.Errorf("failed to get rest config, reason %v", err)
+		}
+		crdClient, err := crd_cs.NewForConfig(restcfg)
+		if err != nil {
+			return fmt.Errorf("failed to create crd client, reason %v", err)
+		}
+		err = apiextensions.RegisterCRDs(crdClient, crds)
+		if err != nil {
+			return fmt.Errorf("failed to register application crd, reason %v", err)
+		}
+
 		client, err := kubex.New(getter, log)
 		if err != nil {
 			return err
