@@ -19,21 +19,26 @@ package driver
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
 	rspb "helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/storage/driver"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kblabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/tools/cache"
 	"kmodules.xyz/client-go/discovery"
 	meta_util "kmodules.xyz/client-go/meta"
 	"sigs.k8s.io/application/api/app/v1beta1"
 	cs "sigs.k8s.io/application/client/clientset/versioned/typed/app/v1beta1"
+)
+
+const (
+	annotaionScopeReleaseName = "release-name.meta.x-helm.dev" // "/${name}" : ""
 )
 
 var _ driver.Driver = (*Applications)(nil)
@@ -69,21 +74,44 @@ func (d *Applications) Name() string {
 // Get fetches the release named by key. The corresponding release is returned
 // or error if not found.
 func (d *Applications) Get(key string) (*rspb.Release, error) {
-	name, _, err := ParseKey(key)
+	relName, _, err := ParseKey(key)
+	if err != nil {
+		return nil, err
+	}
+
+	selector, err := metav1.LabelSelectorAsSelector(&metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			fmt.Sprintf("%s/%s", annotaionScopeReleaseName, relName): relName,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	// fetch the configmap holding the release named by key
-	obj, err := d.ai.Get(context.Background(), name, metav1.GetOptions{})
+	result, err := d.ai.List(context.Background(), metav1.ListOptions{
+		LabelSelector: selector.String(),
+	})
 	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return nil, driver.ErrReleaseNotFound
-		}
-
-		d.Log("get: failed to get %q: %s", key, err)
+		d.Log("get: failed to get release %q: %s", relName, err)
 		return nil, err
 	}
+	if len(result.Items) == 0 {
+		return nil, driver.ErrReleaseNotFound
+	}
+	if len(result.Items) > 1 {
+		names := make([]string, 0, len(result.Items))
+		for _, obj := range result.Items {
+			name, err := cache.MetaNamespaceKeyFunc(obj)
+			if err != nil {
+				return nil, err
+			}
+			names = append(names, name)
+		}
+		return nil, fmt.Errorf("multiple matching application objects found %s", strings.Join(names, ","))
+	}
+	obj := &result.Items[0]
+
 	// found the configmap, decode the base64 data string
 	r, err := decodeReleaseFromApp(obj, d.di, d.cl)
 	if err != nil {
@@ -92,6 +120,42 @@ func (d *Applications) Get(key string) (*rspb.Release, error) {
 	}
 	// return the release object
 	return r, nil
+}
+
+func (d *Applications) getApp(relName string) (*v1beta1.Application, error) {
+	selector, err := metav1.LabelSelectorAsSelector(&metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			fmt.Sprintf("%s/%s", annotaionScopeReleaseName, relName): relName,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// fetch the configmap holding the release named by key
+	result, err := d.ai.List(context.Background(), metav1.ListOptions{
+		LabelSelector: selector.String(),
+	})
+	if err != nil {
+		d.Log("get: failed to get release %q: %s", relName, err)
+		return nil, err
+	}
+	if len(result.Items) == 0 {
+		return nil, driver.ErrReleaseNotFound
+	}
+	if len(result.Items) > 1 {
+		names := make([]string, 0, len(result.Items))
+		for _, obj := range result.Items {
+			name, err := cache.MetaNamespaceKeyFunc(obj)
+			if err != nil {
+				return nil, err
+			}
+			names = append(names, name)
+		}
+		return nil, fmt.Errorf("multiple matching application objects found %s", strings.Join(names, ","))
+	}
+	obj := &result.Items[0]
+	return obj, nil
 }
 
 // List fetches all releases and returns the list releases such
@@ -167,11 +231,33 @@ func (d *Applications) Create(_ string, rls *rspb.Release) error {
 
 	// push the configmap object out into the kubiverse
 	_, _, err := createOrPatchApplication(context.Background(), d.ai, obj.ObjectMeta, func(in *v1beta1.Application) *v1beta1.Application {
-		in.Labels = meta_util.MergeKeys(in.Labels, obj.Labels)
-		in.Annotations = meta_util.MergeKeys(in.Annotations, obj.Annotations)
+		in.Labels = meta_util.OverwriteKeys(in.Labels, obj.Labels)
+		in.Annotations = meta_util.OverwriteKeys(in.Annotations, obj.Annotations)
+
+		// merge GKs
+		gkMap := map[metav1.GroupKind]interface{}{}
+		for _, gk := range in.Spec.ComponentGroupKinds {
+			gkMap[gk] = empty
+		}
+		for _, gk := range obj.Spec.ComponentGroupKinds {
+			gkMap[gk] = empty
+		}
+		gks := make([]metav1.GroupKind, 0, len(gkMap))
+		for gk := range gkMap {
+			gks = append(gks, gk)
+		}
+		sort.Slice(gks, func(i, j int) bool {
+			if gks[i].Group == gks[j].Group {
+				return gks[i].Kind < gks[j].Kind
+			}
+			return gks[i].Group < gks[j].Group
+		})
+
 		if err := mergo.Merge(&in.Spec, &obj.Spec); err != nil {
 			panic(fmt.Errorf("failed to update appliation %s/%s spec, reason: %v", in.Namespace, in.Name, err))
 		}
+		in.Spec.Selector = obj.Spec.Selector
+		in.Spec.ComponentGroupKinds = gks
 		in.Spec.AssemblyPhase = obj.Spec.AssemblyPhase
 		return in
 	}, metav1.PatchOptions{})
@@ -211,7 +297,7 @@ func (d *Applications) Update(_ string, rls *rspb.Release) error {
 
 // Delete deletes the Application holding the release named by key.
 func (d *Applications) Delete(key string) (rls *rspb.Release, err error) {
-	name, _, err := ParseKey(key)
+	relName, _, err := ParseKey(key)
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +310,17 @@ func (d *Applications) Delete(key string) (rls *rspb.Release, err error) {
 		return nil, err
 	}
 	// delete the release
-	if err = d.ai.Delete(context.Background(), name, metav1.DeleteOptions{}); err != nil {
+	selector, err := metav1.LabelSelectorAsSelector(&metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			fmt.Sprintf("%s/%s", annotaionScopeReleaseName, relName): relName,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err = d.ai.DeleteCollection(context.Background(), metav1.DeleteOptions{}, metav1.ListOptions{
+		LabelSelector: selector.String(),
+	}); err != nil {
 		return rls, err
 	}
 	return rls, nil

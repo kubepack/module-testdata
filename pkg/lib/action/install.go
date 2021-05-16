@@ -31,6 +31,7 @@ type InstallOptions struct {
 	ReleaseName  string         `json:"releaseName"`
 	Atomic       bool           `json:"atomic"`
 	SkipCRDs     bool           `json:"skipCRDs"`
+	PartOf       string         `json:"partOf"`
 }
 
 type Installer struct {
@@ -83,6 +84,8 @@ func (x *Installer) Run() (*release.Release, error) {
 	if err != nil {
 		return nil, err
 	}
+	// TODO(tamal): Use constant
+	setAnnotations(chrt.Chart, "app.kubernetes.io/part-of", x.opts.PartOf)
 
 	cmd := action.NewInstall(&x.cfg.Configuration)
 	var extraAPIs []string

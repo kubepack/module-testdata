@@ -19,6 +19,7 @@ package driver
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -30,12 +31,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"kmodules.xyz/client-go/discovery"
+	"kmodules.xyz/client-go/tools/parser"
 	"kubepack.dev/kubepack/apis"
-	"kubepack.dev/kubepack/pkg/lib"
 	appapi "kubepack.dev/lib-app/api/v1alpha1"
 	"kubepack.dev/lib-app/pkg/editor"
 	"sigs.k8s.io/application/api/app/v1beta1"
+	"sigs.k8s.io/yaml"
 )
+
+var empty = struct{}{}
 
 // newApplicationSecretsObject constructs a kubernetes Application object
 // to store a release. Each configmap data entry is the base64
@@ -53,20 +57,30 @@ import (
 func newApplicationObject(rls *rspb.Release) *v1beta1.Application {
 	const owner = "helm"
 
+	/*
+		LabelChartFirstDeployed = "first-deployed.meta.helm.sh/"
+		LabelChartLastDeployed  = "last-deployed.meta.helm.sh/"
+	*/
+
+	appName := rls.Name
+	if partOf, ok := rls.Chart.Metadata.Annotations["app.kubernetes.io/part-of"]; ok {
+		appName = partOf
+	}
+
 	// create and return configmap object
 	obj := &v1beta1.Application{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      rls.Name,
+			Name:      appName,
 			Namespace: rls.Namespace,
 			Labels: map[string]string{
-				"name":    rls.Name,
-				"owner":   owner,
-				"status":  release.StatusDeployed.String(),
-				"version": strconv.Itoa(rls.Version),
+				"owner": owner,
+				"release-name.meta.x-helm.dev/" + rls.Name: rls.Name,
+				"status.meta.x-helm.dev/" + rls.Name:       release.StatusDeployed.String(),
+				"version.meta.x-helm.dev/" + rls.Name:      strconv.Itoa(rls.Version),
 			},
 			Annotations: map[string]string{
-				apis.LabelChartFirstDeployed: rls.Info.FirstDeployed.UTC().Format(time.RFC3339),
-				apis.LabelChartLastDeployed:  rls.Info.LastDeployed.UTC().Format(time.RFC3339),
+				"first-deployed.meta.x-helm.dev/" + rls.Name: rls.Info.FirstDeployed.UTC().Format(time.RFC3339),
+				"last-deployed.meta.x-helm.dev/" + rls.Name:  rls.Info.LastDeployed.UTC().Format(time.RFC3339),
 			},
 		},
 		Spec: v1beta1.ApplicationSpec{
@@ -120,6 +134,50 @@ func newApplicationObject(rls *rspb.Release) *v1beta1.Application {
 	//	}
 	//}
 
+	// obj.Spec.Selector
+
+	lbl := map[string]string{
+		"app.kubernetes.io/managed-by": "Helm",
+	}
+	if partOf, ok := rls.Chart.Metadata.Annotations["app.kubernetes.io/part-of"]; ok {
+		lbl["app.kubernetes.io/part-of"] = partOf
+	} else {
+		lbl["app.kubernetes.io/name"] = rls.Chart.Name()
+		lbl["app.kubernetes.io/instance"] = rls.Name
+	}
+
+	if editorGVR, ok := rls.Chart.Metadata.Annotations["kubepack.io/editor"]; ok {
+		obj.Annotations["kubepack.io/editor"] = editorGVR
+	}
+
+	components, _, err := parser.ExtractComponents([]byte(rls.Manifest))
+	if err != nil {
+		// WARNING(tamal): This error should never happen
+		panic(err)
+	}
+
+	if data, ok := rls.Chart.Metadata.Annotations["kubepack.io/resources"]; ok && data != "" {
+		var gks []metav1.GroupKind
+		err := yaml.Unmarshal([]byte(data), &gks)
+		if err != nil {
+			panic(err)
+		}
+		for _, gk := range gks {
+			components[gk] = empty
+		}
+	}
+	gks := make([]metav1.GroupKind, 0, len(components))
+	for gk := range components {
+		gks = append(gks, gk)
+	}
+	sort.Slice(gks, func(i, j int) bool {
+		if gks[i].Group == gks[j].Group {
+			return gks[i].Kind < gks[j].Kind
+		}
+		return gks[i].Group < gks[j].Group
+	})
+	obj.Spec.ComponentGroupKinds = gks
+
 	return obj
 }
 
@@ -145,23 +203,24 @@ func decodeReleaseFromApp(app *v1beta1.Application, di dynamic.Interface, cl dis
 	rls.Namespace = app.Namespace
 	rls.Version, _ = strconv.Atoi(app.Labels["version"])
 
-	chartURL, ok := app.Annotations[apis.LabelChartURL]
-	if !ok {
-		return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartURL, app.Namespace, app.Name)
-	}
-	chartName, ok := app.Annotations[apis.LabelChartName]
-	if !ok {
-		return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartName, app.Namespace, app.Name)
-	}
-	chartVersion, ok := app.Annotations[apis.LabelChartVersion]
-	if !ok {
-		return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartVersion, app.Namespace, app.Name)
-	}
-	chrt, err := lib.DefaultRegistry.GetChart(chartURL, chartName, chartVersion)
-	if err != nil {
-		return nil, err
-	}
-	rls.Chart = chrt.Chart
+	// This is not needed or used from release
+	//chartURL, ok := app.Annotations[apis.LabelChartURL]
+	//if !ok {
+	//	return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartURL, app.Namespace, app.Name)
+	//}
+	//chartName, ok := app.Annotations[apis.LabelChartName]
+	//if !ok {
+	//	return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartName, app.Namespace, app.Name)
+	//}
+	//chartVersion, ok := app.Annotations[apis.LabelChartVersion]
+	//if !ok {
+	//	return nil, fmt.Errorf("missing %s annotation on application %s/%s", apis.LabelChartVersion, app.Namespace, app.Name)
+	//}
+	//chrt, err := lib.DefaultRegistry.GetChart(chartURL, chartName, chartVersion)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//rls.Chart = chrt.Chart
 
 	rls.Info = &release.Info{
 		Description: app.Spec.Descriptor.Description,

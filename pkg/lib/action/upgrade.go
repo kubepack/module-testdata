@@ -35,6 +35,7 @@ type UpgradeOptions struct {
 	MaxHistory    int            `json:"maxHistory"`
 	Atomic        bool           `json:"atomic"`
 	CleanupOnFail bool           `json:"cleanupOnFail"`
+	PartOf        string         `json:"partOf"`
 }
 
 type Upgrader struct {
@@ -93,6 +94,8 @@ func (x *Upgrader) Run() (*release.Release, error) {
 	if err != nil {
 		return nil, err
 	}
+	// TODO(tamal): Use constant
+	setAnnotations(chrt.Chart, "app.kubernetes.io/part-of", x.opts.PartOf)
 
 	cmd := action.NewUpgrade(&x.cfg.Configuration)
 	cmd.Install = x.opts.Install

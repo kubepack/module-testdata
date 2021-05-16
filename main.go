@@ -184,7 +184,7 @@ func main_install_or_upgrdae() {
 		URL:     url,
 		Name:    name,
 		Version: version,
-	}, name, values.Options{})
+	}, name, "", values.Options{})
 	if err != nil {
 		klog.Fatal(err)
 	}
@@ -221,6 +221,7 @@ func main____() {
 			dc:        dc,
 			mapper:    discovery.NewResourceMapper(mapper),
 			flowstore: flowstore,
+			FlowName:  myflow.Name,
 			action:    action,
 			// err:    nil,
 		}

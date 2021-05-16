@@ -58,3 +58,7 @@ helm repo update
 	// made available for inspection by other applications.
 	Annotations map[string]string `json:"annotations,omitempty"`
 ```
+
+- app.kubernetes.io/part-of
+- kubepack.io/editor
+- kubepack.io/resources

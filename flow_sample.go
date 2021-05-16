@@ -6,6 +6,7 @@ import (
 )
 
 var myflow = &Flow{
+	Name: "myflow",
 	Actions: []Action{
 		{
 			ReleaseName: "first",

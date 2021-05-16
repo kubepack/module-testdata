@@ -7,6 +7,7 @@ import (
 )
 
 type Flow struct {
+	Name     string         `json:"name"` // should be metadata.name
 	Actions  []Action       `json:"actions"`
 	EdgeList []DirectedEdge `json:"edge_list"`
 }

@@ -114,7 +114,7 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.27.1
 
 replace gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.3.0
 
-replace helm.sh/helm/v3 => github.com/kubepack/helm/v3 v3.1.0-rc.1.0.20210516173101-94be03bbbbac
+replace helm.sh/helm/v3 => github.com/kubepack/helm/v3 v3.1.0-rc.1.0.20210516194816-dede995b8005
 
 replace k8s.io/api => k8s.io/api v0.21.0
 

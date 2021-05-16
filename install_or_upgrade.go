@@ -23,7 +23,7 @@ type ChartLocator struct {
 	Version string
 }
 
-func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace string, ref ChartLocator, releaseName string, opts values.Options) (kutil.VerbType, error) {
+func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace string, ref ChartLocator, releaseName, partOf string, opts values.Options) (kutil.VerbType, error) {
 	helmDriver := "secrets"
 
 	cfg := new(actionx.Configuration)
@@ -55,6 +55,7 @@ func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace strin
 				ReleaseName:  releaseName,
 				Atomic:       false,
 				SkipCRDs:     false,
+				PartOf:       partOf,
 			})
 		rel, err := i.Run()
 		if err != nil {
@@ -88,6 +89,7 @@ func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace strin
 			MaxHistory:    0,
 			Atomic:        false,
 			CleanupOnFail: false,
+			PartOf:        partOf,
 		})
 	rel, err := i.Run()
 	if err != nil {

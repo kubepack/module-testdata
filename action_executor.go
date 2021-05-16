@@ -33,6 +33,7 @@ type ActionRunner struct {
 	mapper       discovery.ResourceMapper
 	flowstore    map[string]*FlowState
 
+	FlowName  string
 	Namespace string
 	action    Action
 	err       error
@@ -66,6 +67,11 @@ func (e *ActionRunner) Err() error {
 func (e *ActionRunner) MeetsPrerequisites() bool {
 	if e.err != nil {
 		e.err = NewAlreadyErrored(e.err)
+		return false
+	}
+
+	if e.FlowName == "" {
+		e.err = fmt.Errorf("flow name is required")
 		return false
 	}
 
@@ -245,7 +251,7 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		Engine:      new(engine.Engine).NewInstance(chrt.Chart, vals), // reuse engine
 	}
 
-	vt, err := InstallOrUpgrade(e.ClientGetter, e.Namespace, ref, e.action.ReleaseName, values.Options{
+	vt, err := InstallOrUpgrade(e.ClientGetter, e.Namespace, ref, e.action.ReleaseName, e.FlowName, values.Options{
 		ReplaceValues: vals,
 	})
 	if err != nil {
