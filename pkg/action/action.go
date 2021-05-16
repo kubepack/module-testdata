@@ -33,6 +33,7 @@ import (
 	"kmodules.xyz/client-go/apiextensions"
 	disco_util "kmodules.xyz/client-go/discovery"
 	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
+	"sigs.k8s.io/application/api/app/v1beta1"
 	appcs "sigs.k8s.io/application/client/clientset/versioned"
 )
 
@@ -53,23 +54,6 @@ func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespac
 		kc = client
 		factory = client.Factory
 	default:
-		// register Application CRD
-		crds := []*apiextensions.CustomResourceDefinition{
-			v1alpha1.ApplicationCustomResourceDefinition(),
-		}
-		restcfg, err := getter.ToRESTConfig()
-		if err != nil {
-			return fmt.Errorf("failed to get rest config, reason %v", err)
-		}
-		crdClient, err := crd_cs.NewForConfig(restcfg)
-		if err != nil {
-			return fmt.Errorf("failed to create crd client, reason %v", err)
-		}
-		err = apiextensions.RegisterCRDs(crdClient, crds)
-		if err != nil {
-			return fmt.Errorf("failed to register application crd, reason %v", err)
-		}
-
 		client, err := kubex.New(getter, log)
 		if err != nil {
 			return err
@@ -101,10 +85,33 @@ func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespac
 		if err != nil {
 			return err
 		}
+		rsmapper := disco_util.NewResourceMapper(mapper)
+		appcrdRegistered, err := rsmapper.ExistsGVR(v1beta1.GroupVersion.WithResource("applications"))
+		if err != nil {
+			return fmt.Errorf("failed to detect if Application CRD is registered, reason %v", err)
+		}
+		if !appcrdRegistered {
+			// register Application CRD
+			crds := []*apiextensions.CustomResourceDefinition{
+				v1alpha1.ApplicationCustomResourceDefinition(),
+			}
+			restcfg, err := getter.ToRESTConfig()
+			if err != nil {
+				return fmt.Errorf("failed to get rest config, reason %v", err)
+			}
+			crdClient, err := crd_cs.NewForConfig(restcfg)
+			if err != nil {
+				return fmt.Errorf("failed to create crd client, reason %v", err)
+			}
+			err = apiextensions.RegisterCRDs(crdClient, crds)
+			if err != nil {
+				return fmt.Errorf("failed to register application crd, reason %v", err)
+			}
+		}
 		d := driver2.NewApplications(
 			newApplicationClient(lazyClient),
 			dynamic.NewForConfigOrDie(config),
-			disco_util.NewResourceMapper(mapper),
+			rsmapper,
 		)
 		d.Log = log
 		store = storage.Init(d)
