@@ -108,7 +108,7 @@ var (
 	version = "0.1.0"
 )
 
-func main__install_chart() {
+func main() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -326,7 +326,7 @@ func main__copy_label_selector() {
 }
 
 // must use int64
-func main() {
+func main_set_values() {
 	u := unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"a": map[string]interface{}{

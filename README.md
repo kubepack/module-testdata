@@ -23,3 +23,27 @@ helm repo update
 ** ToDos **
 
 - [ ] Auto Register Application CRD
+
+
+**Multi-chart**
+
+- ownership checks for resources
+
+```
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: first
+      meta.helm.sh/release-namespace: default
+    labels:
+      app.kubernetes.io/managed-by: Helm
+```
+
+- storage driver ownership
+
+```
+	// apply labels
+	lbs.set("name", rls.Name)
+	lbs.set("owner", "helm")
+	lbs.set("status", rls.Info.Status.String())
+	lbs.set("version", strconv.Itoa(rls.Version))
+```

@@ -16,8 +16,7 @@ type Flow struct {
 // Keep is such that we can always generate helm equivalent command
 type KV struct {
 	Key string
-	// type is an OpenAPI type definition for this column.
-	// See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#data-types for more.
+	// string, nil, null
 	Type string `json:"type"`
 	// format is an optional OpenAPI type definition for this column. The 'name' format is applied
 	// to the primary identifier column to assist in clients identifying column is the resource name.
@@ -35,6 +34,10 @@ type KV struct {
 	//
 	// Directly use path from object
 	Path string `json:"path"`
+
+	// json patch operation
+	// See also: http://jsonpatch.com/
+	// Op string `json:"op"`
 }
 
 type LoadValue struct {

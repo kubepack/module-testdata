@@ -7,8 +7,8 @@ actions:
       resource: deployments
       version: v1
   readiness_criteria:
-    helm_wait: true
     required_resources: null
+    timeout: 0s
     wait_for_reconciled: true
   releaseName: first
   url: https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/
@@ -25,7 +25,7 @@ actions:
         target:
           apiVersion: v1
           kind: Pod
-    use_release: first
+      use_release: first
     values:
     - Key: first.name
       path: .metadata.name
@@ -40,8 +40,8 @@ actions:
       resource: pods
       version: v1
   readiness_criteria:
-    helm_wait: true
     required_resources: null
+    timeout: 0s
     wait_for_reconciled: true
   releaseName: third
   url: https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/
