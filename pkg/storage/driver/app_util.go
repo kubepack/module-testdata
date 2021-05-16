@@ -19,6 +19,7 @@ package driver
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sort"
@@ -32,14 +33,14 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 	rspb "helm.sh/helm/v3/pkg/release"
 	helmtime "helm.sh/helm/v3/pkg/time"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"kmodules.xyz/client-go/discovery"
-	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/parser"
-	appapi "kubepack.dev/lib-app/api/v1alpha1"
 	"sigs.k8s.io/application/api/app/v1beta1"
 	"sigs.k8s.io/yaml"
 )
@@ -152,7 +153,7 @@ func newApplicationObject(rls *rspb.Release) *v1beta1.Application {
 	}
 
 	if editorGVR, ok := rls.Chart.Metadata.Annotations["kubepack.io/editor"]; ok {
-		obj.Annotations["kubepack.io/editor"] = editorGVR
+		obj.Annotations["editor.meta.x-helm.dev/"+rls.Name] = editorGVR
 	}
 
 	components, _, err := parser.ExtractComponents([]byte(rls.Manifest))
@@ -242,22 +243,36 @@ func decodeReleaseFromApp(app *v1beta1.Application, rlsNames []string, di dynami
 		rls.Info.FirstDeployed, _ = helmtime.Parse(time.RFC3339, app.Annotations["first-deployed.meta.x-helm.dev/"+rlsName])
 		rls.Info.LastDeployed, _ = helmtime.Parse(time.RFC3339, app.Annotations["last-deployed.meta.x-helm.dev/"+rlsName])
 
-		rlm := appapi.ObjectMeta{
+		var editorGVR *metav1.GroupVersionResource
+		if data, ok := app.Annotations["editor.meta.x-helm.dev/"+rlsName]; ok && data != "" {
+			var gvr metav1.GroupVersionResource
+			err := yaml.Unmarshal([]byte(data), gvr)
+			if err != nil {
+				return nil, fmt.Errorf("editor.meta.x-helm.dev/%s is not a valid GVR, reason %v", rlsName, err)
+			}
+			editorGVR = &gvr
+		}
+		rlm := types.NamespacedName{
 			Name:      rls.Name,
 			Namespace: rls.Namespace,
 		}
-		tpl, err := EditorChartValueManifest(app, cl, di, rlm, rls.Chart)
+		tpl, err := EditorChartValueManifest(app, cl, di, rlm, editorGVR)
 		if err != nil {
 			return nil, err
 		}
 
 		rls.Manifest = string(tpl.Manifest)
 
-		if rls.Chart == nil {
-			rls.Chart = &chart.Chart{}
+		if editorGVR != nil {
+			rls.Chart = &chart.Chart{
+				Values: map[string]interface{}{},
+			}
+			rls.Chart.Values = tpl.Values.Object
+			rls.Config = tpl.Values.Object
+		} else {
+			// keep tls.Chart nil and see if that causes panics
+			// we don't want to load chart from remote here any more, because we want to embed chart in Go binary
 		}
-		rls.Chart.Values = tpl.Values.Object
-		rls.Config = map[string]interface{}{}
 
 		releases = append(releases, &rls)
 	}
@@ -265,8 +280,13 @@ func decodeReleaseFromApp(app *v1beta1.Application, rlsNames []string, di dynami
 	return releases, nil
 }
 
-func EditorChartValueManifest(app *v1beta1.Application, mapper discovery.ResourceMapper, dc dynamic.Interface, mt appapi.ObjectMeta, chrt *chart.Chart) (*appapi.EditorTemplate, error) {
-	selector, err := metav1.LabelSelectorAsSelector(app.Spec.Selector)
+func EditorChartValueManifest(app *v1beta1.Application, mapper discovery.ResourceMapper, dc dynamic.Interface, rls types.NamespacedName, editorGVR *metav1.GroupVersionResource) (*EditorTemplate, error) {
+	labels := app.Spec.Selector
+	labels.MatchLabels["app.kubernetes.io/instance"] = rls.Name
+	// TODO: keep track of chart name via labels?
+	// appNameLabel                   = "app.kubernetes.io/name" not used
+
+	selector, err := metav1.LabelSelectorAsSelector(labels)
 	if err != nil {
 		return nil, err
 	}
@@ -275,40 +295,14 @@ func EditorChartValueManifest(app *v1beta1.Application, mapper discovery.Resourc
 	var buf bytes.Buffer
 	resourceMap := map[string]interface{}{}
 
-	// detect apiVersion from defaultValues in chart
-	gkToVersion := map[metav1.GroupKind]string{}
-	for rsKey, x := range chrt.Values["resources"].(map[string]interface{}) {
-		var tm metav1.TypeMeta
-
-		err = meta_util.DecodeObject(x.(map[string]interface{}), &tm)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse TypeMeta for rsKey %s in chart name=%s version=%s values", rsKey, chrt.Name(), chrt.Metadata.Version)
-		}
-		gv, err := schema.ParseGroupVersion(tm.APIVersion)
-		if err != nil {
-			return nil, err
-		}
-		gkToVersion[metav1.GroupKind{
-			Group: gv.Group,
-			Kind:  tm.Kind,
-		}] = gv.Version
-	}
-
-	var resources []*unstructured.Unstructured
 	for _, gk := range app.Spec.ComponentGroupKinds {
-		version, ok := gkToVersion[gk]
-		if !ok {
-			return nil, fmt.Errorf("failed to detect version for GK %#v in chart name=%s version=%s values", gk, chrt.Name(), chrt.Metadata.Version)
-		}
-
-		gvk := schema.GroupVersionKind{
+		gvr, err := mapper.GVR(schema.GroupVersionKind{
 			Group:   gk.Group,
-			Version: version,
 			Kind:    gk.Kind,
-		}
-		gvr, err := mapper.GVR(gvk)
+			Version: "", // use the preferred version
+		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to detect GVR for gvk %v, reason %v", gvk, err)
+			return nil, fmt.Errorf("failed to detect GVR for gk %v, reason %v", gk, err)
 		}
 		namespaced, err := mapper.IsNamespaced(gvr)
 		if err != nil {
@@ -316,7 +310,7 @@ func EditorChartValueManifest(app *v1beta1.Application, mapper discovery.Resourc
 		}
 		var rc dynamic.ResourceInterface
 		if namespaced {
-			rc = dc.Resource(gvr).Namespace(mt.Namespace)
+			rc = dc.Resource(gvr).Namespace(rls.Namespace)
 		} else {
 			rc = dc.Resource(gvr)
 		}
@@ -328,10 +322,42 @@ func EditorChartValueManifest(app *v1beta1.Application, mapper discovery.Resourc
 			return nil, err
 		}
 		for _, obj := range list.Items {
+			// check ownership
+			// https://github.com/kubepack/helm/blob/ac-1.21.0/pkg/action/validate.go#L87-L92
+
+			annotationMap := app.GetAnnotations()
+			if v := annotationMap["meta.helm.sh/release-name"]; v != rls.Name {
+				continue
+			}
+			if v := annotationMap["meta.helm.sh/release-namespace"]; v != rls.Namespace {
+				continue
+			}
+
+			// check that we got the right version
+			if v, ok := annotationMap[core.LastAppliedConfigAnnotation]; !ok {
+				return nil, fmt.Errorf("failed to detect version for GK %#v in release %v", gk, rls)
+			} else {
+				var mt metav1.TypeMeta
+				err := json.Unmarshal([]byte(v), &mt)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse TypeMeta from %s", v)
+				}
+				gv, err := schema.ParseGroupVersion(mt.APIVersion)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse version from %v for %s", mt.APIVersion, v)
+				}
+				if gv.Version != gvr.Version {
+					// object not using preferred version, so we need to load the correct version again
+					o2, err := rc.Get(context.TODO(), obj.GetName(), metav1.GetOptions{})
+					if err != nil {
+						return nil, fmt.Errorf("failed to get object with correct apiVersion, reason %v", err)
+					}
+					obj = *o2
+				}
+			}
+
 			// remove status
 			delete(obj.Object, "status")
-
-			resources = append(resources, &obj)
 
 			buf.WriteString("\n---\n")
 			data, err := yaml.Marshal(&obj)
@@ -340,7 +366,7 @@ func EditorChartValueManifest(app *v1beta1.Application, mapper discovery.Resourc
 			}
 			buf.Write(data)
 
-			rsKey, err := ResourceKey(obj.GetAPIVersion(), obj.GetKind(), mt.Name, obj.GetName())
+			rsKey, err := ResourceKey(obj.GetAPIVersion(), obj.GetKind(), rls.Name, obj.GetName())
 			if err != nil {
 				return nil, err
 			}
@@ -351,60 +377,34 @@ func EditorChartValueManifest(app *v1beta1.Application, mapper discovery.Resourc
 		}
 	}
 
-	s1map := map[string]int{}
-	s2map := map[string]int{}
-	s3map := map[string]int{}
-	for _, obj := range resources {
-		s1, s2, s3 := ResourceFilename(obj.GetAPIVersion(), obj.GetKind(), mt.Name, obj.GetName())
-		if v, ok := s1map[s1]; !ok {
-			s1map[s1] = 1
-		} else {
-			s1map[s1] = v + 1
-		}
-		if v, ok := s2map[s2]; !ok {
-			s2map[s2] = 1
-		} else {
-			s2map[s2] = v + 1
-		}
-		if v, ok := s3map[s3]; !ok {
-			s3map[s3] = 1
-		} else {
-			s3map[s3] = v + 1
-		}
-	}
-
-	rsfiles := make([]appapi.ResourceObject, 0, len(resources))
-	for _, obj := range resources {
-		s1, s2, s3 := ResourceFilename(obj.GetAPIVersion(), obj.GetKind(), mt.Name, obj.GetName())
-		name := s1
-		if s1map[s1] > 1 {
-			if s2map[s2] > 1 {
-				name = s3
-			} else {
-				name = s2
-			}
-		}
-		rsfiles = append(rsfiles, appapi.ResourceObject{
-			Filename: name,
-			Data:     obj,
-		})
-	}
-
-	tpl := appapi.EditorTemplate{
+	tpl := EditorTemplate{
 		Manifest: buf.Bytes(),
-		Values: &unstructured.Unstructured{
+	}
+	if editorGVR != nil {
+		tpl.Values = &unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"metadata": map[string]interface{}{
-					"resource": chrt.Values["metadata"].(map[string]interface{})["resource"],
-					"release":  mt,
+					"resource": map[string]interface{}{
+						"group":    editorGVR.Group,
+						"version":  editorGVR.Version,
+						"resource": editorGVR.Resource,
+					},
+					"release": map[string]interface{}{
+						"name":      rls.Name,
+						"namespace": rls.Namespace,
+					},
 				},
 				"resources": resourceMap,
 			},
-		},
-		Resources: rsfiles,
+		}
 	}
 
 	return &tpl, nil
+}
+
+type EditorTemplate struct {
+	Manifest []byte                     `json:"manifest,omitempty"`
+	Values   *unstructured.Unstructured `json:"values,omitempty"`
 }
 
 func ResourceKey(apiVersion, kind, chartName, name string) (string, error) {
