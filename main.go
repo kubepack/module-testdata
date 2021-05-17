@@ -108,7 +108,7 @@ var (
 	version = "0.1.0"
 )
 
-func main_install_chart() {
+func main() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -137,7 +137,7 @@ func main_install_chart() {
 	}
 
 	namespace := "default"
-	i, err := action.NewInstaller(getter, namespace, "secret")
+	i, err := action.NewInstaller(getter, namespace, "app")
 	if err != nil {
 		klog.Fatal(err)
 	}
@@ -345,6 +345,6 @@ func main_set_values() {
 	}
 }
 
-func main() {
+func main_print_yaml() {
 	print_yaml()
 }

@@ -1230,7 +1230,7 @@ kubedb.dev/apimachinery/apis/catalog/v1alpha1
 kubedb.dev/apimachinery/apis/kubedb
 kubedb.dev/apimachinery/apis/kubedb/v1alpha2
 kubedb.dev/apimachinery/crds
-# kubepack.dev/kubepack v0.3.4-0.20210517032317-54d0d8fa1423
+# kubepack.dev/kubepack v0.3.4-0.20210517091307-2e83ade65e8e
 ## explicit
 kubepack.dev/kubepack/apis
 kubepack.dev/kubepack/apis/kubepack
