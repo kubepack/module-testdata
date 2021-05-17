@@ -139,9 +139,9 @@ func (s *Storage) DeployedAll(name string) ([]*rspb.Release, error) {
 	if s.Name() == "Kubepack" {
 		// WARNING(tamal): These labels are required for Kubepack/Application driver.
 		ls, err = s.Driver.Query(map[string]string{
-			"release-name.meta.x-helm.dev/" + name: name,
-			"owner":                                "helm",
-			"status.meta.x-helm.dev/" + name:       "deployed",
+			"name.release.x-helm.dev/" + name:   name,
+			"owner":                             "helm",
+			"status.release.x-helm.dev/" + name: "deployed",
 		})
 	} else {
 		ls, err = s.Driver.Query(map[string]string{

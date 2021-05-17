@@ -20,7 +20,7 @@ require (
 	kmodules.xyz/apply v0.0.0-20210503080849-eb226c295465
 	kmodules.xyz/client-go v0.0.0-20210514054158-27e164b43474
 	kmodules.xyz/resource-metadata v0.5.5-0.20210516011544-f7fae593b6ca
-	kubepack.dev/kubepack v0.3.4-0.20210513213410-fab49d312392
+	kubepack.dev/kubepack v0.3.4-0.20210517032317-54d0d8fa1423
 	kubepack.dev/lib-helm v0.2.4-0.20210504075710-8653e4557a39
 	sigs.k8s.io/application v0.8.2-0.20200306235134-f10d9ca8abd4
 	sigs.k8s.io/cli-utils v0.25.0
@@ -116,7 +116,7 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.27.1
 
 replace gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.3.0
 
-replace helm.sh/helm/v3 => github.com/kubepack/helm/v3 v3.1.0-rc.1.0.20210516194816-dede995b8005
+replace helm.sh/helm/v3 => github.com/kubepack/helm/v3 v3.1.0-rc.1.0.20210517044039-061c32110cd1
 
 replace k8s.io/api => k8s.io/api v0.21.0
 

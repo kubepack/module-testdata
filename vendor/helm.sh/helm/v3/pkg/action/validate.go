@@ -17,11 +17,13 @@ limitations under the License.
 package action
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/pkg/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/resource"
 
@@ -36,6 +38,7 @@ const (
 	appPartOfLabel                 = "app.kubernetes.io/part-of"
 	appNameLabel                   = "app.kubernetes.io/name"
 	appInstanceLabel               = "app.kubernetes.io/instance"
+	editorLabel                    = "meta.x-helm.dev/editor"
 	appManagedByHelm               = "Helm"
 	helmReleaseNameAnnotation      = "meta.helm.sh/release-name"
 	helmReleaseNamespaceAnnotation = "meta.helm.sh/release-namespace"
@@ -193,15 +196,22 @@ func mergeStrStrMaps(current, desired map[string]string) map[string]string {
 }
 
 // special handling for appscode / kubepack specific case
-func getAppLabels(rel *release.Release, cfg *Configuration) map[string]string {
+func getAppLabels(rel *release.Release, cfg *Configuration) (map[string]string, error) {
 	result := map[string]string{}
 	// check storage driver name
 	if cfg.Releases.Name() == "Kubepack" {
-		result[appNameLabel] = rel.Chart.Name()
 		result[appInstanceLabel] = rel.Name
+
+		if partOf, ok := rel.Chart.Metadata.Annotations[appPartOfLabel]; ok {
+			result[appPartOfLabel] = partOf
+		}
+		if data, ok := rel.Chart.Metadata.Annotations[editorLabel]; ok && data != "" {
+			var gvr metav1.GroupVersionResource
+			if err := json.Unmarshal([]byte(data), &gvr); err != nil {
+				return nil, errors.Wrapf(err, "failed to parse %s annotation value %s as GVR", editorLabel, data)
+			}
+			result[appNameLabel] = fmt.Sprintf("%s.%s", gvr.Resource, gvr.Group)
+		}
 	}
-	if partOf, ok := rel.Chart.Metadata.Annotations[appPartOfLabel]; ok {
-		result[appPartOfLabel] = partOf
-	}
-	return result
+	return result, nil
 }

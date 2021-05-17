@@ -259,7 +259,11 @@ func (i *Install) Run(chrt *chart.Chart, vals map[string]interface{}) (*release.
 	}
 
 	// It is safe to use "force" here because these are resources currently rendered by the chart.
-	err = resources.Visit(setMetadataVisitor(rel.Name, rel.Namespace, getAppLabels(rel, i.cfg), true))
+	appLabels, err := getAppLabels(rel, i.cfg)
+	if err != nil {
+		return nil, err
+	}
+	err = resources.Visit(setMetadataVisitor(rel.Name, rel.Namespace, appLabels, true))
 	if err != nil {
 		return nil, err
 	}
