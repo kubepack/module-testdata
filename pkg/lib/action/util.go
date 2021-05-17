@@ -23,7 +23,7 @@ func setAnnotations(chrt *chart.Chart, k, v string) {
 	if chrt.Metadata.Annotations == nil {
 		chrt.Metadata.Annotations = map[string]string{}
 	}
-	if k != "" {
+	if v != "" {
 		chrt.Metadata.Annotations[k] = v
 	} else {
 		delete(chrt.Metadata.Annotations, k)
