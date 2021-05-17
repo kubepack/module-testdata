@@ -7,8 +7,10 @@ import (
 
 	"github.com/gobuffalo/flect"
 	"helm.sh/helm/v3/pkg/chart"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"kmodules.xyz/resource-metadata/hub"
 )
 
@@ -28,7 +30,19 @@ func setAnnotations(chrt *chart.Chart, k, v string) {
 	}
 }
 
-func RefillMetadata(reg *hub.Registry, ref, actual map[string]interface{}) error {
+func RefillMetadata(reg *hub.Registry, ref, actual map[string]interface{}, gvr metav1.GroupVersionResource, rls types.NamespacedName) error {
+	actual["metadata"] = map[string]interface{}{
+		"resource": map[string]interface{}{
+			"group":    gvr.Group,
+			"version":  gvr.Version,
+			"resource": gvr.Resource,
+		},
+		"release": map[string]interface{}{
+			"name":      rls.Name,
+			"namespace": rls.Namespace,
+		},
+	}
+
 	refResources, ok := ref["resources"].(map[string]interface{})
 	if !ok {
 		return nil
@@ -38,14 +52,14 @@ func RefillMetadata(reg *hub.Registry, ref, actual map[string]interface{}) error
 		return nil
 	}
 
-	rlsName, _, err := unstructured.NestedString(actual, "metadata", "release", "name")
-	if err != nil {
-		return err
-	}
-	rlsNamespace, _, err := unstructured.NestedString(actual, "metadata", "release", "namespace")
-	if err != nil {
-		return err
-	}
+	//rlsName, _, err := unstructured.NestedString(actual, "metadata", "release", "name")
+	//if err != nil {
+	//	return err
+	//}
+	//rlsNamespace, _, err := unstructured.NestedString(actual, "metadata", "release", "namespace")
+	//if err != nil {
+	//	return err
+	//}
 
 	for key, o := range actualResources {
 		// apiVersion
@@ -64,25 +78,25 @@ func RefillMetadata(reg *hub.Registry, ref, actual map[string]interface{}) error
 		obj["kind"] = refObj["kind"]
 
 		// name
-		name := rlsName
+		name := rls.Name
 		idx := strings.IndexRune(key, '_')
 		if idx != -1 {
 			name += "-" + flect.Dasherize(key[idx+1:])
 		}
-		err = unstructured.SetNestedField(obj, name, "metadata", "name")
+		err := unstructured.SetNestedField(obj, name, "metadata", "name")
 		if err != nil {
 			return err
 		}
 
 		// namespace
 		// TODO: add namespace if needed
-		err = unstructured.SetNestedField(obj, rlsNamespace, "metadata", "namespace")
+		err = unstructured.SetNestedField(obj, rls.Namespace, "metadata", "namespace")
 		if err != nil {
 			return err
 		}
 
 		// get select labels from app and set to obj labels
-		err = updateLabels(rlsName, obj, "metadata", "labels")
+		err = updateLabels(rls.Name, obj, "metadata", "labels")
 		if err != nil {
 			return err
 		}
@@ -93,7 +107,7 @@ func RefillMetadata(reg *hub.Registry, ref, actual map[string]interface{}) error
 				if rd.Spec.UI != nil {
 					for _, fields := range rd.Spec.UI.InstanceLabelPaths {
 						fields := strings.Trim(fields, ".")
-						err = updateLabels(rlsName, obj, strings.Split(fields, ".")...)
+						err = updateLabels(rls.Name, obj, strings.Split(fields, ".")...)
 						if err != nil {
 							return err
 						}

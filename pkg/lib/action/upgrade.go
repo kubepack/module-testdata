@@ -1,6 +1,7 @@
 package action
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -11,6 +12,8 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/release"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"kmodules.xyz/resource-metadata/hub"
 	libchart "kubepack.dev/lib-helm/chart"
@@ -140,7 +143,15 @@ func (x *Upgrader) Run() (*release.Release, error) {
 		return nil, err
 	}
 	if data, ok := chrt.Chart.Metadata.Annotations["meta.x-helm.dev/editor"]; ok && data != "" {
-		if err := RefillMetadata(hub.NewRegistryOfKnownResources(), chrt.Chart.Values, vals); err != nil {
+		var gvr metav1.GroupVersionResource
+		if err := json.Unmarshal([]byte(data), &gvr); err != nil {
+			return nil, fmt.Errorf("failed to parse %s annotation %s", "meta.x-helm.dev/editor", data)
+		}
+		rls := types.NamespacedName{
+			Namespace: x.opts.Namespace,
+			Name:      x.releaseName,
+		}
+		if err := RefillMetadata(hub.NewRegistryOfKnownResources(), chrt.Chart.Values, vals, gvr, rls); err != nil {
 			return nil, err
 		}
 	}
