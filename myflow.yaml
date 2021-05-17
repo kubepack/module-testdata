@@ -52,3 +52,4 @@ edge_list:
   Dst: {}
   Name: ""
   Src: {}
+name: myflow

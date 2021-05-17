@@ -148,20 +148,9 @@ type ResourceDefinitions struct {
 // wait ([-f FILENAME] | resource.group/resource.name | resource.group [(-l label | --all)]) [--for=delete|--for condition=available]
 
 type WaitFlags struct {
-	Resource     GroupResource         `json:"resource" protobuf:"bytes,1,opt,name=resource"`
+	Resource     metav1.GroupResource  `json:"resource" protobuf:"bytes,1,opt,name=resource"`
 	Labels       *metav1.LabelSelector `json:"labels" protobuf:"bytes,2,opt,name=labels"`
 	All          bool                  `json:"all" protobuf:"varint,3,opt,name=all"`
 	Timeout      metav1.Duration       `json:"timeout" protobuf:"bytes,4,opt,name=timeout"`
 	ForCondition string                `json:"for" protobuf:"bytes,5,opt,name=for"`
-}
-
-type GroupVersionResource struct {
-	Group    string `json:"group" protobuf:"bytes,1,opt,name=group"`
-	Version  string `json:"version" protobuf:"bytes,2,opt,name=version"`
-	Resource string `json:"resource" protobuf:"bytes,3,opt,name=resource"`
-}
-
-type GroupResource struct {
-	Group string `json:"group" protobuf:"bytes,1,opt,name=group"`
-	Name  string `json:"name" protobuf:"bytes,2,opt,name=name"`
 }

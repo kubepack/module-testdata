@@ -289,10 +289,7 @@ func (e *ActionRunner) WaitUntilReady() {
 	waitflags := make([]v1alpha1.WaitFlags, 0, len(e.action.ReadinessCriteria.WaitFors))
 	for _, w := range e.action.ReadinessCriteria.WaitFors {
 		waitflags = append(waitflags, v1alpha1.WaitFlags{
-			Resource: v1alpha1.GroupResource{
-				Group: w.Resource.Group,
-				Name:  w.Resource.Name,
-			},
+			Resource:     w.Resource,
 			Labels:       w.Labels,
 			All:          w.All,
 			Timeout:      w.Timeout,

@@ -79,10 +79,10 @@ func newApplicationObject(rls *rspb.Release) *v1beta1.Application {
 			Name:      appName,
 			Namespace: rls.Namespace,
 			Labels: map[string]string{
-				"owner": owner,
-				"name.release.x-helm.dev/" + rls.Name: rls.Name,
-				"status.release.x-helm.dev/" + rls.Name:       release.StatusDeployed.String(),
-				"version.release.x-helm.dev/" + rls.Name:      strconv.Itoa(rls.Version),
+				"owner":                                  owner,
+				"name.release.x-helm.dev/" + rls.Name:    rls.Name,
+				"status.release.x-helm.dev/" + rls.Name:  release.StatusDeployed.String(),
+				"version.release.x-helm.dev/" + rls.Name: strconv.Itoa(rls.Version),
 			},
 			Annotations: map[string]string{
 				"first-deployed.release.x-helm.dev/" + rls.Name: rls.Info.FirstDeployed.UTC().Format(time.RFC3339),

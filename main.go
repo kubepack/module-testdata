@@ -108,7 +108,7 @@ var (
 	version = "0.1.0"
 )
 
-func main() {
+func main_install_chart() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -343,4 +343,8 @@ func main_set_values() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func main() {
+	print_yaml()
 }
