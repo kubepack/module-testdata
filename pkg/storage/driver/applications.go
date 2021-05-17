@@ -38,7 +38,7 @@ import (
 )
 
 const (
-	annotaionScopeReleaseName = "release-name.meta.x-helm.dev" // "/${name}" : ""
+	annotaionScopeReleaseName = "name.release.x-helm.dev" // "/${name}" : ""
 )
 
 var _ driver.Driver = (*Applications)(nil)

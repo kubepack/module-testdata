@@ -60,5 +60,7 @@ helm repo update
 ```
 
 - app.kubernetes.io/part-of
-- kubepack.io/editor
-- kubepack.io/resources
+- meta.x-helm.dev/editor: {gvr}
+- meta.x-helm.dev/resources: |
+   - { GK }
+   - { GK }

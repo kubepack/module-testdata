@@ -80,13 +80,13 @@ func newApplicationObject(rls *rspb.Release) *v1beta1.Application {
 			Namespace: rls.Namespace,
 			Labels: map[string]string{
 				"owner": owner,
-				"release-name.meta.x-helm.dev/" + rls.Name: rls.Name,
-				"status.meta.x-helm.dev/" + rls.Name:       release.StatusDeployed.String(),
-				"version.meta.x-helm.dev/" + rls.Name:      strconv.Itoa(rls.Version),
+				"name.release.x-helm.dev/" + rls.Name: rls.Name,
+				"status.release.x-helm.dev/" + rls.Name:       release.StatusDeployed.String(),
+				"version.release.x-helm.dev/" + rls.Name:      strconv.Itoa(rls.Version),
 			},
 			Annotations: map[string]string{
-				"first-deployed.meta.x-helm.dev/" + rls.Name: rls.Info.FirstDeployed.UTC().Format(time.RFC3339),
-				"last-deployed.meta.x-helm.dev/" + rls.Name:  rls.Info.LastDeployed.UTC().Format(time.RFC3339),
+				"first-deployed.release.x-helm.dev/" + rls.Name: rls.Info.FirstDeployed.UTC().Format(time.RFC3339),
+				"last-deployed.release.x-helm.dev/" + rls.Name:  rls.Info.LastDeployed.UTC().Format(time.RFC3339),
 			},
 		},
 		Spec: v1beta1.ApplicationSpec{
@@ -152,8 +152,8 @@ func newApplicationObject(rls *rspb.Release) *v1beta1.Application {
 		lbl["app.kubernetes.io/instance"] = rls.Name
 	}
 
-	if editorGVR, ok := rls.Chart.Metadata.Annotations["kubepack.io/editor"]; ok {
-		obj.Annotations["editor.meta.x-helm.dev/"+rls.Name] = editorGVR
+	if editorGVR, ok := rls.Chart.Metadata.Annotations["meta.x-helm.dev/editor"]; ok {
+		obj.Annotations["editor.x-helm.dev/"+rls.Name] = editorGVR
 	}
 
 	components, _, err := parser.ExtractComponents([]byte(rls.Manifest))
@@ -162,7 +162,7 @@ func newApplicationObject(rls *rspb.Release) *v1beta1.Application {
 		panic(err)
 	}
 
-	if data, ok := rls.Chart.Metadata.Annotations["kubepack.io/resources"]; ok && data != "" {
+	if data, ok := rls.Chart.Metadata.Annotations["meta.x-helm.dev/resources"]; ok && data != "" {
 		var gks []metav1.GroupKind
 		err := yaml.Unmarshal([]byte(data), &gks)
 		if err != nil {
@@ -212,9 +212,9 @@ func decodeReleaseFromApp(app *v1beta1.Application, rlsNames []string, di dynami
 	for _, rlsName := range rlsNames {
 		var rls rspb.Release
 
-		rls.Name = app.Labels["release-name.meta.x-helm.dev/"+rlsName]
+		rls.Name = app.Labels["name.release.x-helm.dev/"+rlsName]
 		rls.Namespace = app.Namespace
-		rls.Version, _ = strconv.Atoi(app.Labels["version.meta.x-helm.dev/"+rlsName])
+		rls.Version, _ = strconv.Atoi(app.Labels["version.release.x-helm.dev/"+rlsName])
 
 		// This is not needed or used from release
 		//chartURL, ok := app.Annotations[apis.LabelChartURL]
@@ -237,18 +237,18 @@ func decodeReleaseFromApp(app *v1beta1.Application, rlsNames []string, di dynami
 
 		rls.Info = &release.Info{
 			Description: app.Spec.Descriptor.Description,
-			Status:      release.Status(app.Labels["status.meta.x-helm.dev/"+rlsName]),
+			Status:      release.Status(app.Labels["status.release.x-helm.dev/"+rlsName]),
 			Notes:       app.Spec.Descriptor.Notes,
 		}
-		rls.Info.FirstDeployed, _ = helmtime.Parse(time.RFC3339, app.Annotations["first-deployed.meta.x-helm.dev/"+rlsName])
-		rls.Info.LastDeployed, _ = helmtime.Parse(time.RFC3339, app.Annotations["last-deployed.meta.x-helm.dev/"+rlsName])
+		rls.Info.FirstDeployed, _ = helmtime.Parse(time.RFC3339, app.Annotations["first-deployed.release.x-helm.dev/"+rlsName])
+		rls.Info.LastDeployed, _ = helmtime.Parse(time.RFC3339, app.Annotations["last-deployed.release.x-helm.dev/"+rlsName])
 
 		var editorGVR *metav1.GroupVersionResource
-		if data, ok := app.Annotations["editor.meta.x-helm.dev/"+rlsName]; ok && data != "" {
+		if data, ok := app.Annotations["editor.x-helm.dev/"+rlsName]; ok && data != "" {
 			var gvr metav1.GroupVersionResource
 			err := yaml.Unmarshal([]byte(data), gvr)
 			if err != nil {
-				return nil, fmt.Errorf("editor.meta.x-helm.dev/%s is not a valid GVR, reason %v", rlsName, err)
+				return nil, fmt.Errorf("editor.x-helm.dev/%s is not a valid GVR, reason %v", rlsName, err)
 			}
 			editorGVR = &gvr
 		}
