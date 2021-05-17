@@ -12,6 +12,7 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"kmodules.xyz/resource-metadata/hub"
 	libchart "kubepack.dev/lib-helm/chart"
 	"kubepack.dev/lib-helm/repo"
 )
@@ -126,6 +127,11 @@ func (x *Installer) Run() (*release.Release, error) {
 	vals, err := x.opts.Values.MergeValues(chrt.Chart)
 	if err != nil {
 		return nil, err
+	}
+	if data, ok := chrt.Chart.Metadata.Annotations["meta.x-helm.dev/editor"]; ok && data != "" {
+		if err := RefillMetadata(hub.NewRegistryOfKnownResources(), chrt.Chart.Values, vals); err != nil {
+			return nil, err
+		}
 	}
 	// chartutil.CoalesceValues(chrt, chrtVals) will use vals to render templates
 	chrt.Chart.Values = map[string]interface{}{}

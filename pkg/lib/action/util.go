@@ -3,8 +3,13 @@ package action
 import (
 	"fmt"
 	"log"
+	"strings"
 
+	"github.com/gobuffalo/flect"
 	"helm.sh/helm/v3/pkg/chart"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"kmodules.xyz/resource-metadata/hub"
 )
 
 func debug(format string, v ...interface{}) {
@@ -21,4 +26,98 @@ func setAnnotations(chrt *chart.Chart, k, v string) {
 	} else {
 		delete(chrt.Metadata.Annotations, k)
 	}
+}
+
+func RefillMetadata(reg *hub.Registry, ref, actual map[string]interface{}) error {
+	refResources, ok := ref["resources"].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	actualResources, ok := actual["resources"].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	rlsName, _, err := unstructured.NestedString(actual, "metadata", "release", "name")
+	if err != nil {
+		return err
+	}
+	rlsNamespace, _, err := unstructured.NestedString(actual, "metadata", "release", "namespace")
+	if err != nil {
+		return err
+	}
+
+	for key, o := range actualResources {
+		// apiVersion
+		// kind
+		// metadata:
+		//	name:
+		//  namespace:
+		//  labels:
+
+		refObj, ok := refResources[key].(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("missing key %s in reference chart values", key)
+		}
+		obj := o.(map[string]interface{})
+		obj["apiVersion"] = refObj["apiVersion"]
+		obj["kind"] = refObj["kind"]
+
+		// name
+		name := rlsName
+		idx := strings.IndexRune(key, '_')
+		if idx != -1 {
+			name += "-" + flect.Dasherize(key[idx+1:])
+		}
+		err = unstructured.SetNestedField(obj, name, "metadata", "name")
+		if err != nil {
+			return err
+		}
+
+		// namespace
+		// TODO: add namespace if needed
+		err = unstructured.SetNestedField(obj, rlsNamespace, "metadata", "namespace")
+		if err != nil {
+			return err
+		}
+
+		// get select labels from app and set to obj labels
+		err = updateLabels(rlsName, obj, "metadata", "labels")
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.FromAPIVersionAndKind(refObj["apiVersion"].(string), refObj["kind"].(string))
+		if gvr, err := reg.GVR(gvk); err == nil {
+			if rd, err := reg.LoadByGVR(gvr); err == nil {
+				if rd.Spec.UI != nil {
+					for _, fields := range rd.Spec.UI.InstanceLabelPaths {
+						fields := strings.Trim(fields, ".")
+						err = updateLabels(rlsName, obj, strings.Split(fields, ".")...)
+						if err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
+
+		actualResources[key] = obj
+	}
+	return nil
+}
+
+func updateLabels(rlsName string, obj map[string]interface{}, fields ...string) error {
+	labels, ok, err := unstructured.NestedStringMap(obj, fields...)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		labels = map[string]string{}
+	}
+	key := "app.kubernetes.io/instance"
+	if _, ok := labels[key]; ok {
+		labels[key] = rlsName
+	}
+	return unstructured.SetNestedStringMap(obj, labels, fields...)
 }
