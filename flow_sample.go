@@ -95,7 +95,7 @@ var myflow = &Flow{
 			},
 			Prerequisites: Prerequisites{
 				RequiredResources: []metav1.GroupVersionResource{
-					{Group: "apps", Version: "v1", Resource: "pods"},
+					{Group: "apps", Version: "v1", Resource: "deployments"},
 				},
 			},
 			ReadinessCriteria: ReadinessCriteria{
