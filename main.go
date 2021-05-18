@@ -108,7 +108,7 @@ var (
 	version = "0.1.0"
 )
 
-func main() {
+func main____() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -191,7 +191,7 @@ func main_install_or_upgrdae() {
 	klog.Infof("Chart %s", vt)
 }
 
-func main____() {
+func main() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
