@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "first.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "first.labels" . | nindent 4 }}
 spec:
