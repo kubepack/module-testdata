@@ -1393,7 +1393,6 @@ kmodules.xyz/client-go v0.0.0-20210514054158-27e164b43474 h1:NkF8L00Id/9Vfmfpkuz
 kmodules.xyz/client-go v0.0.0-20210514054158-27e164b43474/go.mod h1:R+xaDwIcqjPygQcVd3+0K2WBEwMB+wSZJAK18WdSr0A=
 kmodules.xyz/constants v0.0.0-20210218100002-2c304bfda278/go.mod h1:DbiFk1bJ1KEO94t1SlAn7tzc+Zz95rSXgyUKa2nzPmY=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20210503192455-da44af375c4c/go.mod h1:QDC1mgkeHEV9DAJCtkAk7arY4aWqI5EKoXiB2FnreoA=
-kmodules.xyz/custom-resources v0.0.0-20210504034124-54c54fcdb690 h1:joP9DMuws3o8Zuli1rGOyywAV997ohdvcioi9p2YsK8=
 kmodules.xyz/custom-resources v0.0.0-20210504034124-54c54fcdb690/go.mod h1:PnKZ3/CHL1vyaT8j5hfUCUyec95BhrOY+BsaK8SNpLw=
 kmodules.xyz/monitoring-agent-api v0.0.0-20210504040241-261c2428d207 h1:qqsoPwEe2ldLA7ukrbKC9iROnh09sjT0HqcCB/qW/f4=
 kmodules.xyz/monitoring-agent-api v0.0.0-20210504040241-261c2428d207/go.mod h1:K0ubjKRPZ67NMEOA5MKM9ECQmlJtC8W60/QL1NwXfv0=
@@ -1404,10 +1403,9 @@ kmodules.xyz/openshift v0.0.0-20210504040454-a3ddfc579bb7/go.mod h1:T6jBAUCoXuGZ
 kmodules.xyz/prober v0.0.0-20210504042421-eca494e828bc/go.mod h1:Asmxrv1or+IbQf8U/B/5I/YFcnpMhyM6DxaByMWwDTQ=
 kmodules.xyz/prober v0.0.0-20210504215326-2e406706b970/go.mod h1:Asmxrv1or+IbQf8U/B/5I/YFcnpMhyM6DxaByMWwDTQ=
 kmodules.xyz/resource-metadata v0.5.5-0.20210514060730-df2b810e12e6/go.mod h1:pBRpHjzUaveYQ1HEXDo+pZwtxgqoTtR3ls9qefZdwNs=
-kmodules.xyz/resource-metadata v0.5.5-0.20210516011544-f7fae593b6ca h1:eHnI7STvgolrTEB3rLZriSpXcxUhZmWbyPxu+CKQBXM=
-kmodules.xyz/resource-metadata v0.5.5-0.20210516011544-f7fae593b6ca/go.mod h1:pBRpHjzUaveYQ1HEXDo+pZwtxgqoTtR3ls9qefZdwNs=
+kmodules.xyz/resource-metadata v0.5.5-0.20210518080453-19842259fa84 h1:iTGsczjQeFjiyPbNU418C0g5brTy2l46SXK0P+9VMAk=
+kmodules.xyz/resource-metadata v0.5.5-0.20210518080453-19842259fa84/go.mod h1:a/tXEU8Zk8+T9fAb6RDWzoLYrOgueOrPeW+tnwKUpfk=
 kmodules.xyz/webhook-runtime v0.0.0-20210504042742-3a9911e3dcdc/go.mod h1:6XuoN0H+Od+12aEywFaQnPJ3DYfJZE+Sx0MB4dzWI5Q=
-kubedb.dev/apimachinery v0.18.1-0.20210506003355-e982e5902ad2 h1:67cbik5tN/ny9WrW5MFjr4KGObZzdF2VhoSdK/9Lfd8=
 kubedb.dev/apimachinery v0.18.1-0.20210506003355-e982e5902ad2/go.mod h1:MV2Q4muyxAhU3VPYcmN/Oyj2Ca3VMIH+59PYNFTUxZo=
 kubepack.dev/kubepack v0.3.4-0.20210517091307-2e83ade65e8e h1:mlNUuIV5keHbn7r5Skjog5oIZrEGRzD45LTn0zqqc20=
 kubepack.dev/kubepack v0.3.4-0.20210517091307-2e83ade65e8e/go.mod h1:p4kPNjZ1RQzQzySKHz7azq4dFpcZZ2lTXxaDdpXCzNc=

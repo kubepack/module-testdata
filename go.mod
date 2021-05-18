@@ -19,7 +19,7 @@ require (
 	k8s.io/kubectl v0.21.0
 	kmodules.xyz/apply v0.0.0-20210503080849-eb226c295465
 	kmodules.xyz/client-go v0.0.0-20210514054158-27e164b43474
-	kmodules.xyz/resource-metadata v0.5.5-0.20210516011544-f7fae593b6ca
+	kmodules.xyz/resource-metadata v0.5.5-0.20210518080453-19842259fa84
 	kubepack.dev/kubepack v0.3.4-0.20210517091307-2e83ade65e8e
 	kubepack.dev/lib-helm v0.2.4-0.20210504075710-8653e4557a39
 	sigs.k8s.io/application v0.8.2-0.20200306235134-f10d9ca8abd4
