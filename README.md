@@ -22,7 +22,7 @@ helm repo update
 
 ** ToDos **
 
-- [ ] Auto Register Application CRD
+- [x] Auto Register Application CRD
 
 
 **Multi-chart**
