@@ -3,7 +3,7 @@ package main
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
+	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 )
 
 type Flow struct {
@@ -57,7 +57,7 @@ type DirectedEdge struct {
 	Name       string
 	Src        metav1.TypeMeta
 	Dst        metav1.TypeMeta
-	Connection v1alpha1.ResourceConnectionSpec
+	Connection rsapi.ResourceConnectionSpec
 }
 
 type ObjectRef struct {
@@ -72,7 +72,7 @@ type Action struct {
 	// Also the action name
 	ReleaseName string `json:"releaseName" protobuf:"bytes,3,opt,name=releaseName"`
 
-	v1alpha1.ChartRepoRef `json:",inline" protobuf:"bytes,1,opt,name=chartRef"`
+	rsapi.ChartRepoRef `json:",inline" protobuf:"bytes,1,opt,name=chartRef"`
 
 	// Namespace   string `json:"namespace" protobuf:"bytes,4,opt,name=namespace"`
 
@@ -102,7 +102,7 @@ type ReadinessCriteria struct {
 	WaitForReconciled bool `json:"wait_for_reconciled"`
 
 	ResourcesExist []metav1.GroupVersionResource `json:"required_resources"`
-	WaitFors       []WaitFlags  `json:"waitFors,omitempty" protobuf:"bytes,9,rep,name=waitFors"`
+	WaitFors       []WaitFlags                   `json:"waitFors,omitempty" protobuf:"bytes,9,rep,name=waitFors"`
 }
 
 type ChartRef struct {

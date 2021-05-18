@@ -2,7 +2,7 @@ package main
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
+	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 )
 
 var myflow = &Flow{
@@ -10,10 +10,10 @@ var myflow = &Flow{
 	Actions: []Action{
 		{
 			ReleaseName: "first",
-			ChartRepoRef: v1alpha1.ChartRepoRef{
-				URL:  "https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/",
-				Name: "first",
-				Version:        "0.1.0",
+			ChartRepoRef: rsapi.ChartRepoRef{
+				URL:     "https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/",
+				Name:    "first",
+				Version: "0.1.0",
 			},
 			ValuesFile:     "",
 			ValuesPatch:    nil,
@@ -44,10 +44,10 @@ var myflow = &Flow{
 		},
 		{
 			ReleaseName: "third",
-			ChartRepoRef: v1alpha1.ChartRepoRef{
-				URL:  "https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/",
-				Name: "third",
-				Version:     "0.1.0",
+			ChartRepoRef: rsapi.ChartRepoRef{
+				URL:     "https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/",
+				Name:    "third",
+				Version: "0.1.0",
 			},
 			ValuesFile:  "",
 			ValuesPatch: nil,
@@ -123,7 +123,7 @@ var myflow = &Flow{
 			Name:       "",
 			Src:        metav1.TypeMeta{},
 			Dst:        metav1.TypeMeta{},
-			Connection: v1alpha1.ResourceConnectionSpec{},
+			Connection: rsapi.ResourceConnectionSpec{},
 		},
 	},
 }

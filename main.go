@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
-	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
+
 	"github.com/tamalsaha/hell-flow/pkg/lib/action"
 	"github.com/tamalsaha/hell-flow/pkg/values"
 
@@ -24,6 +24,7 @@ import (
 	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/discovery"
 	clientcmdutil "kmodules.xyz/client-go/tools/clientcmd"
+	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 	"kubepack.dev/kubepack/pkg/lib"
 	"sigs.k8s.io/yaml"
 )
@@ -71,7 +72,7 @@ func main__() {
 		Version: "",
 		Kind:    "MutatingWebhookConfiguration",
 	}
-	mappings, err := mapper.RESTMappings(gvk.GroupKind(), "v1alpha1")
+	mappings, err := mapper.RESTMappings(gvk.GroupKind(), "rsapi")
 	if err != nil {
 		if meta.IsNoMatchError(err) {
 			fmt.Println(err.(*meta.NoKindMatchError).Error())
@@ -180,7 +181,7 @@ func main_install_or_upgrdae() {
 	}
 	getter := clientcmdutil.NewClientGetter(&kubeconfig)
 
-	vt, err := InstallOrUpgrade(getter, "default", v1alpha1.ChartRepoRef{
+	vt, err := InstallOrUpgrade(getter, "default", rsapi.ChartRepoRef{
 		URL:     url,
 		Name:    name,
 		Version: version,

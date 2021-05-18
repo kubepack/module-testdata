@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
 	"log"
 
 	actionx "github.com/tamalsaha/hell-flow/pkg/action"
@@ -15,6 +14,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
+	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 	"kubepack.dev/kubepack/pkg/lib"
 )
 
@@ -24,7 +24,7 @@ type ChartLocator struct {
 	Version string
 }
 
-func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace string, ref v1alpha1.ChartRepoRef, releaseName, partOf string, opts values.Options) (kutil.VerbType, error) {
+func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace string, ref rsapi.ChartRepoRef, releaseName, partOf string, opts values.Options) (kutil.VerbType, error) {
 	helmDriver := "secrets"
 
 	cfg := new(actionx.Configuration)

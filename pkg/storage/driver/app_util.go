@@ -137,14 +137,14 @@ func newApplicationObject(rls *rspb.Release) *v1beta1.Application {
 	lbl := map[string]string{
 		"app.kubernetes.io/managed-by": "Helm",
 	}
-	if partOf, ok := rls.Chart.Metadata.Annotations["app.kubernetes.io/part-of"]; ok && partOf != ""{
+	if partOf, ok := rls.Chart.Metadata.Annotations["app.kubernetes.io/part-of"]; ok && partOf != "" {
 		lbl["app.kubernetes.io/part-of"] = partOf
 	} else {
 		lbl["app.kubernetes.io/name"] = rls.Chart.Name()
 		lbl["app.kubernetes.io/instance"] = rls.Name
 	}
 	obj.Spec.Selector = &metav1.LabelSelector{
-		MatchLabels:      lbl,
+		MatchLabels: lbl,
 	}
 
 	if editorGVR, ok := rls.Chart.Metadata.Annotations["meta.x-helm.dev/editor"]; ok {
