@@ -92,7 +92,7 @@ type Action struct {
 }
 
 type Prerequisites struct {
-	RequiredResources []ResourceID `json:"required_resources"`
+	RequiredResources []metav1.GroupVersionResource `json:"required_resources"`
 }
 
 type ReadinessCriteria struct {
@@ -102,7 +102,7 @@ type ReadinessCriteria struct {
 	// Same as helm --wait
 	WaitForReconciled bool `json:"wait_for_reconciled"`
 
-	ResourcesExist []ResourceID `json:"required_resources"`
+	ResourcesExist []metav1.GroupVersionResource `json:"required_resources"`
 	WaitFors       []WaitFlags  `json:"waitFors,omitempty" protobuf:"bytes,9,rep,name=waitFors"`
 }
 
@@ -111,38 +111,9 @@ type ChartRef struct {
 	Name string `json:"name" protobuf:"bytes,2,opt,name=name"`
 }
 
-type ChartSelection struct {
-	ChartRef    `json:",inline" protobuf:"bytes,1,opt,name=chartRef"`
-	Version     string `json:"version" protobuf:"bytes,2,opt,name=version"`
-	ReleaseName string `json:"releaseName" protobuf:"bytes,3,opt,name=releaseName"`
-	Namespace   string `json:"namespace" protobuf:"bytes,4,opt,name=namespace"`
-
-	ValuesFile string `json:"valuesFile,omitempty" protobuf:"bytes,6,opt,name=valuesFile"`
-	// RFC 6902 compatible json patch. ref: http://jsonpatch.com
-	// +optional
-	// +kubebuilder:pruning:PreserveUnknownFields
-	ValuesPatch *runtime.RawExtension `json:"valuesPatch,omitempty" protobuf:"bytes,7,opt,name=valuesPatch"`
-	Resources   *ResourceDefinitions  `json:"resources,omitempty" protobuf:"bytes,8,opt,name=resources"`
-	WaitFors    []WaitFlags           `json:"waitFors,omitempty" protobuf:"bytes,9,rep,name=waitFors"`
-}
-
-// ResourceID identifies a resource
-type ResourceID struct {
-	Group   string `json:"group" protobuf:"bytes,1,opt,name=group"`
-	Version string `json:"version" protobuf:"bytes,2,opt,name=version"`
-	// Name is the plural name of the resource to serve.  It must match the name of the CustomResourceDefinition-registration
-	// too: plural.group and it must be all lowercase.
-	Resource string `json:"resource" protobuf:"bytes,3,opt,name=resource"`
-}
-
-type Feature struct {
-	Trait string `json:"trait" protobuf:"bytes,1,opt,name=trait"`
-	Value string `json:"value" protobuf:"bytes,2,opt,name=value"`
-}
-
 type ResourceDefinitions struct {
-	Owned    []ResourceID `json:"owned" protobuf:"bytes,1,rep,name=owned"`
-	Required []ResourceID `json:"required" protobuf:"bytes,2,rep,name=required"`
+	Owned    []metav1.GroupVersionResource `json:"owned" protobuf:"bytes,1,rep,name=owned"`
+	Required []metav1.GroupVersionResource `json:"required" protobuf:"bytes,2,rep,name=required"`
 }
 
 // wait ([-f FILENAME] | resource.group/resource.name | resource.group [(-l label | --all)]) [--for=delete|--for condition=available]

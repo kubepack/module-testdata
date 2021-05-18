@@ -19,7 +19,7 @@ var myflow = &Flow{
 			ValuesPatch:    nil,
 			ValueOverrides: nil,
 			Prerequisites: Prerequisites{
-				RequiredResources: []ResourceID{
+				RequiredResources: []metav1.GroupVersionResource{
 					{Group: "apps", Version: "v1", Resource: "deployments"},
 				},
 			},
@@ -94,7 +94,7 @@ var myflow = &Flow{
 				},
 			},
 			Prerequisites: Prerequisites{
-				RequiredResources: []ResourceID{
+				RequiredResources: []metav1.GroupVersionResource{
 					{Group: "apps", Version: "v1", Resource: "pods"},
 				},
 			},

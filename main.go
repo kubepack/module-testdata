@@ -223,7 +223,7 @@ func main() {
 			flowstore: flowstore,
 			FlowName:  myflow.Name,
 			action:    action,
-			// err:    nil,
+			Namespace: "default",
 		}
 		err := runner.Execute()
 		if err != nil {

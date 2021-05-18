@@ -328,7 +328,7 @@ func (e *ActionRunner) WaitUntilReady() {
 	}
 }
 
-func (e *ActionRunner) resourceExists(ctx context.Context, resources []ResourceID) bool {
+func (e *ActionRunner) resourceExists(ctx context.Context, resources []metav1.GroupVersionResource) bool {
 	for _, r := range resources {
 		exists, err := IsResourceExistsAndReady(ctx, e.dc, e.mapper, schema.GroupVersionResource{
 			Group:    r.Group,
