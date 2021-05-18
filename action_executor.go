@@ -84,13 +84,7 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		return e
 	}
 
-	ref := ChartLocator{
-		URL:     e.action.URL,
-		Name:    e.action.Name,
-		Version: e.action.Version,
-	}
-
-	chrt, err := lib.DefaultRegistry.GetChart(ref.URL, ref.Name, ref.Version)
+	chrt, err := lib.DefaultRegistry.GetChart(e.action.URL, e.action.Name, e.action.Version)
 	if err != nil {
 		e.err = err
 		return e
@@ -251,13 +245,13 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		Engine:      new(engine.Engine).NewInstance(chrt.Chart, vals), // reuse engine
 	}
 
-	vt, err := InstallOrUpgrade(e.ClientGetter, e.Namespace, ref, e.action.ReleaseName, e.FlowName, values.Options{
+	vt, err := InstallOrUpgrade(e.ClientGetter, e.Namespace, e.action.ChartRepoRef, e.action.ReleaseName, e.FlowName, values.Options{
 		ReplaceValues: vals,
 	})
 	if err != nil {
 		e.err = err
 	}
-	klog.Infoln("chart %+v %s", ref, vt)
+	klog.Infoln("chart %+v %s", e.action.ChartRepoRef, vt)
 
 	return e
 }

@@ -72,8 +72,7 @@ type Action struct {
 	// Also the action name
 	ReleaseName string `json:"releaseName" protobuf:"bytes,3,opt,name=releaseName"`
 
-	ChartRef `json:",inline" protobuf:"bytes,1,opt,name=chartRef"`
-	Version  string `json:"version" protobuf:"bytes,2,opt,name=version"`
+	v1alpha1.ChartRepoRef `json:",inline" protobuf:"bytes,1,opt,name=chartRef"`
 
 	// Namespace   string `json:"namespace" protobuf:"bytes,4,opt,name=namespace"`
 

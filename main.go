@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
-
+	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
 	"github.com/tamalsaha/hell-flow/pkg/lib/action"
 	"github.com/tamalsaha/hell-flow/pkg/values"
 
@@ -180,7 +180,7 @@ func main_install_or_upgrdae() {
 	}
 	getter := clientcmdutil.NewClientGetter(&kubeconfig)
 
-	vt, err := InstallOrUpgrade(getter, "default", ChartLocator{
+	vt, err := InstallOrUpgrade(getter, "default", v1alpha1.ChartRepoRef{
 		URL:     url,
 		Name:    name,
 		Version: version,

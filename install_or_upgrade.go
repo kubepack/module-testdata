@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
 	"log"
 
 	actionx "github.com/tamalsaha/hell-flow/pkg/action"
@@ -23,7 +24,7 @@ type ChartLocator struct {
 	Version string
 }
 
-func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace string, ref ChartLocator, releaseName, partOf string, opts values.Options) (kutil.VerbType, error) {
+func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace string, ref v1alpha1.ChartRepoRef, releaseName, partOf string, opts values.Options) (kutil.VerbType, error) {
 	helmDriver := "secrets"
 
 	cfg := new(actionx.Configuration)

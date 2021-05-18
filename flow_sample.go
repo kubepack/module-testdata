@@ -10,11 +10,11 @@ var myflow = &Flow{
 	Actions: []Action{
 		{
 			ReleaseName: "first",
-			ChartRef: ChartRef{
+			ChartRepoRef: v1alpha1.ChartRepoRef{
 				URL:  "https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/",
 				Name: "first",
+				Version:        "0.1.0",
 			},
-			Version:        "0.1.0",
 			ValuesFile:     "",
 			ValuesPatch:    nil,
 			ValueOverrides: nil,
@@ -44,11 +44,11 @@ var myflow = &Flow{
 		},
 		{
 			ReleaseName: "third",
-			ChartRef: ChartRef{
+			ChartRepoRef: v1alpha1.ChartRepoRef{
 				URL:  "https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/",
 				Name: "third",
+				Version:     "0.1.0",
 			},
-			Version:     "0.1.0",
 			ValuesFile:  "",
 			ValuesPatch: nil,
 			/*
