@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"text/template"
 
+	"github.com/tamalsaha/hell-flow/pkg/flowapi"
 	"github.com/tamalsaha/hell-flow/pkg/lib/action"
 	"github.com/tamalsaha/hell-flow/pkg/values"
 
@@ -25,6 +28,7 @@ import (
 	"kmodules.xyz/client-go/discovery"
 	clientcmdutil "kmodules.xyz/client-go/tools/clientcmd"
 	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
+	"kmodules.xyz/resource-metadata/pkg/tableconvertor"
 	"kubepack.dev/kubepack/pkg/lib"
 	"sigs.k8s.io/yaml"
 )
@@ -40,11 +44,8 @@ func print_yaml() {
 	}
 }
 
-func main__() {
+func main__23() {
 	print_yaml()
-
-	masterURL := ""
-	kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube", "config")
 
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
@@ -192,7 +193,7 @@ func main_install_or_upgrdae() {
 	klog.Infof("Chart %s", vt)
 }
 
-func main() {
+func main_test() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -310,4 +311,49 @@ func main_print_yaml() {
 func main_map() {
 	var m map[string]string = nil
 	fmt.Println(m["d"])
+}
+
+func main() {
+	print_yaml()
+
+	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
+	if err != nil {
+		log.Fatalf("Could not get Kubernetes config: %s", err)
+	}
+	dc := dynamic.NewForConfigOrDie(config)
+	gvr := schema.GroupVersionResource{
+		Group:    "",
+		Version:  "v1",
+		Resource: "pods",
+	}
+	obj, err := dc.Resource(gvr).Namespace("demo").Get(context.TODO(), "first-77d78d6cfb-bjgb4", metav1.GetOptions{})
+	if err != nil {
+		panic(err)
+	}
+	kv := flowapi.KV{
+		Key:          "first.port",
+		Type:         "string",
+		PathTemplate: `{{ jp "{.spec.containers[0].ports[0].containerPort}" . }}`,
+		Path:         "",
+	}
+
+	tpl, err := template.New("").Funcs(tableconvertor.TxtFuncMap()).Parse(kv.PathTemplate)
+	if err != nil {
+		panic(fmt.Errorf("failed to parse path template %s, reason: %v", kv.PathTemplate, err))
+	}
+	var buf bytes.Buffer
+	err = tpl.Execute(&buf, obj.UnstructuredContent())
+	if err != nil {
+		panic(fmt.Errorf("failed to resolve path template %s, reason: %v", kv.PathTemplate, err))
+	}
+	switch kv.Type {
+	case "string":
+		fmt.Printf("%s=%v\n", kv.Key, buf.String())
+	case "nil", "null":
+		// See https://helm.sh/docs/chart_template_guide/values_files/#deleting-a-default-key
+		fmt.Printf("%s=null\n", kv.Key)
+	default:
+		fmt.Printf("%s=%v\n", kv.Key, buf.String())
+	}
+	buf.Reset()
 }

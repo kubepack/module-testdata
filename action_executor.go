@@ -218,7 +218,7 @@ func (e *ActionRunner) Apply() *ActionRunner {
 					e.err = fmt.Errorf("failed to parse path template %s, reason: %v", kv.PathTemplate, err)
 					return e
 				}
-				err = tpl.Execute(&buf, obj)
+				err = tpl.Execute(&buf, obj.UnstructuredContent())
 				if err != nil {
 					e.err = fmt.Errorf("failed to resolve path template %s, reason: %v", kv.PathTemplate, err)
 					return e
