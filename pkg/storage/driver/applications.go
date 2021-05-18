@@ -22,8 +22,11 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/tamalsaha/hell-flow/pkg/flowapi"
+
 	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
+	"helm.sh/helm/v3/pkg/engine"
 	rspb "helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/storage/driver"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,10 +52,11 @@ const ApplicationsDriverName = "storage.x-helm.dev/apps"
 // Applications is a wrapper around an implementation of a kubernetes
 // ApplicationsInterface.
 type Applications struct {
-	ai  cs.ApplicationInterface
-	di  dynamic.Interface
-	cl  discovery.ResourceMapper
-	Log func(string, ...interface{})
+	ai        cs.ApplicationInterface
+	di        dynamic.Interface
+	cl        discovery.ResourceMapper
+	Log       func(string, ...interface{})
+	FlowStore map[string]*flowapi.FlowState
 }
 
 // NewApplications initializes a new Applications wrapping an implementation of
@@ -230,6 +234,14 @@ func (d *Applications) Query(labels map[string]string) ([]*rspb.Release, error) 
 func (d *Applications) Create(_ string, rls *rspb.Release) error {
 	// create a new configmap to hold the release
 	obj := newApplicationObject(rls)
+
+	// Only capture it when a new release is created for helm install or upgrade
+	d.FlowStore[rls.Name] = &flowapi.FlowState{
+		ReleaseName: rls.Name,
+		Chrt:        rls.Chart,
+		Values:      rls.Config,
+		Engine:      new(engine.Engine).NewInstance(rls.Chart, rls.Config), // reuse engine
+	}
 
 	// push the configmap object out into the kubiverse
 	_, _, err := createOrPatchApplication(context.Background(), d.ai, obj.ObjectMeta, func(in *v1beta1.Application) *v1beta1.Application {

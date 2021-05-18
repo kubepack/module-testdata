@@ -215,14 +215,11 @@ func main() {
 		klog.Fatal(err)
 	}
 
-	flowstore := map[string]*FlowState{}
-
 	for _, action := range myflow.Actions {
 		runner := ActionRunner{
 			dc:           dc,
 			ClientGetter: getter,
 			mapper:       discovery.NewResourceMapper(mapper),
-			flowstore:    flowstore,
 			FlowName:     myflow.Name,
 			Namespace:    "demo",
 			action:       action,

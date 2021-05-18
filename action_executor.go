@@ -9,9 +9,10 @@ import (
 	"text/template"
 	"time"
 
+	actionx "github.com/tamalsaha/hell-flow/pkg/action"
+	"github.com/tamalsaha/hell-flow/pkg/flowapi"
 	"github.com/tamalsaha/hell-flow/pkg/values"
 
-	"helm.sh/helm/v3/pkg/engine"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,11 +32,10 @@ type ActionRunner struct {
 	dc           dynamic.Interface
 	ClientGetter genericclioptions.RESTClientGetter
 	mapper       discovery.ResourceMapper
-	flowstore    map[string]*FlowState
 
 	FlowName  string
 	Namespace string
-	action    Action
+	action    flowapi.Action
 	err       error
 }
 
@@ -109,7 +109,7 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		name := o.From.Src.Name
 
 		if o.From.UseRelease != "" && name == "" {
-			state, ok := e.flowstore[o.From.UseRelease]
+			state, ok := actionx.FlowStore[o.From.UseRelease]
 			if !ok {
 				e.err = fmt.Errorf("can't find flow state for release %s", o.From.UseRelease)
 				return e
@@ -231,13 +231,6 @@ func (e *ActionRunner) Apply() *ActionRunner {
 	if err != nil {
 		e.err = err
 		return e
-	}
-
-	e.flowstore[e.action.ReleaseName] = &FlowState{
-		ReleaseName: e.action.ReleaseName,
-		Chrt:        chrt.Chart,
-		Values:      vals,
-		Engine:      new(engine.Engine).NewInstance(chrt.Chart, vals), // reuse engine
 	}
 
 	vt, err := InstallOrUpgrade(e.ClientGetter, e.Namespace, e.action.ChartRepoRef, e.action.ReleaseName, e.FlowName, "storage.x-helm.dev/apps", values.Options{

@@ -19,12 +19,6 @@ import (
 	"kubepack.dev/kubepack/pkg/lib"
 )
 
-type ChartLocator struct {
-	URL     string
-	Name    string
-	Version string
-}
-
 func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace string, ref rsapi.ChartRepoRef, releaseName, partOf, helmDriver string, opts values.Options) (kutil.VerbType, error) {
 	cfg := new(actionx.Configuration)
 	// TODO: Use secret driver for which namespace?

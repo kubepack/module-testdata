@@ -1,13 +1,15 @@
 package main
 
 import (
+	"github.com/tamalsaha/hell-flow/pkg/flowapi"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 )
 
-var myflow = &Flow{
+var myflow = &flowapi.Flow{
 	Name: "myflow",
-	Actions: []Action{
+	Actions: []flowapi.Action{
 		{
 			ReleaseName: "first",
 			ChartRepoRef: rsapi.ChartRepoRef{
@@ -18,17 +20,17 @@ var myflow = &Flow{
 			ValuesFile:     "",
 			ValuesPatch:    nil,
 			ValueOverrides: nil,
-			Prerequisites: Prerequisites{
+			Prerequisites: flowapi.Prerequisites{
 				RequiredResources: []metav1.GroupVersionResource{
 					{Group: "apps", Version: "v1", Resource: "deployments"},
 				},
 			},
-			ReadinessCriteria: ReadinessCriteria{
+			ReadinessCriteria: flowapi.ReadinessCriteria{
 				WaitForReconciled: true,
 				// check for installed crd
 				ResourcesExist: nil,
 				// Wait until LB IP is set
-				WaitFors: []WaitFlags{
+				WaitFors: []flowapi.WaitFlags{
 					//{
 					//	Resource:     GroupResource{
 					//		Group: "",
@@ -57,11 +59,11 @@ var myflow = &Flow{
 			  echo "Visit http://127.0.0.1:8080 to use your application"
 			  kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
 			*/
-			ValueOverrides: []LoadValue{
+			ValueOverrides: []flowapi.LoadValue{
 				{
-					From: ObjectLocator{
+					From: flowapi.ObjectLocator{
 						UseRelease: "first",
-						Src: ObjectRef{
+						Src: flowapi.ObjectRef{
 							Target: metav1.TypeMeta{
 								Kind:       "Pod",
 								APIVersion: "v1",
@@ -77,7 +79,7 @@ var myflow = &Flow{
 						},
 						Paths: nil,
 					},
-					Values: []KV{
+					Values: []flowapi.KV{
 						{
 							Key:          "first.name",
 							Type:         "string",
@@ -93,17 +95,17 @@ var myflow = &Flow{
 					},
 				},
 			},
-			Prerequisites: Prerequisites{
+			Prerequisites: flowapi.Prerequisites{
 				RequiredResources: []metav1.GroupVersionResource{
 					{Group: "apps", Version: "v1", Resource: "deployments"},
 				},
 			},
-			ReadinessCriteria: ReadinessCriteria{
+			ReadinessCriteria: flowapi.ReadinessCriteria{
 				WaitForReconciled: true,
 				// check for installed crd
 				ResourcesExist: nil,
 				// Wait until LB IP is set
-				WaitFors: []WaitFlags{
+				WaitFors: []flowapi.WaitFlags{
 					//{
 					//	Resource:     GroupResource{
 					//		Group: "",
@@ -118,7 +120,7 @@ var myflow = &Flow{
 			},
 		},
 	},
-	EdgeList: []DirectedEdge{
+	EdgeList: []flowapi.DirectedEdge{
 		{
 			Name:       "",
 			Src:        metav1.TypeMeta{},
