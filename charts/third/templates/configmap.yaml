@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "third.labels" . | nindent 4 }}
 data:
-  first_name: {{ .Values.first.name }}
-  first_port: {{ .Values.first.port }}
-  second_name: {{ .Values.second.name }}
-  second_port: {{ .Values.second.port }}
+  first_name: {{ .Values.first.name | quote }}
+  first_port: {{ .Values.first.port | quote }}
+  second_name: {{ .Values.second.name | quote }}
+  second_port: {{ .Values.second.port | quote }}

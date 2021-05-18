@@ -193,7 +193,7 @@ func main_install_or_upgrdae() {
 	klog.Infof("Chart %s", vt)
 }
 
-func main_test() {
+func main() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -313,7 +313,7 @@ func main_map() {
 	fmt.Println(m["d"])
 }
 
-func main() {
+func main_test_jp() {
 	print_yaml()
 
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
