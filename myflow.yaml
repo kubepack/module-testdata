@@ -47,9 +47,9 @@ actions:
   url: https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/
   version: 0.1.0
 edge_list:
-- Connection:
+- connection:
     type: ""
-  Dst: {}
-  Name: ""
-  Src: {}
+  dst: {}
+  name: ""
+  src: {}
 name: myflow

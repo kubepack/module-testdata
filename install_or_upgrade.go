@@ -51,11 +51,13 @@ func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace strin
 				SkipCRDs:     false,
 				PartOf:       partOf,
 			})
-		rel, err := i.Run()
+		rel, state, err := i.Run()
 		if err != nil {
 			return kutil.VerbUnchanged, err
 		}
 		klog.Infoln(rel)
+		// Only capture it when a new release is created for helm install or upgrade
+		FlowStore[releaseName] = state
 		return kutil.VerbCreated, err // Installed
 	} else if err != nil {
 		return kutil.VerbUnchanged, err
@@ -85,11 +87,13 @@ func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace strin
 			CleanupOnFail: false,
 			PartOf:        partOf,
 		})
-	rel, err := i.Run()
+	rel, state, err := i.Run()
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 	klog.Infoln(rel)
+	// Only capture it when a new release is created for helm install or upgrade
+	FlowStore[releaseName] = state
 	return kutil.VerbUpdated, err // Upgraded
 }
 

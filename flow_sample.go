@@ -120,7 +120,7 @@ var myflow = &flowapi.Flow{
 			},
 		},
 	},
-	EdgeList: []flowapi.DirectedEdge{
+	EdgeList: []rsapi.NamedEdge{
 		{
 			Name:       "",
 			Src:        metav1.TypeMeta{},

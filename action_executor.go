@@ -9,10 +9,11 @@ import (
 	"text/template"
 	"time"
 
-	actionx "github.com/tamalsaha/hell-flow/pkg/action"
 	"github.com/tamalsaha/hell-flow/pkg/flowapi"
 	"github.com/tamalsaha/hell-flow/pkg/values"
 
+	"helm.sh/helm/v3/pkg/chartutil"
+	"helm.sh/helm/v3/pkg/engine"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -28,6 +29,8 @@ import (
 	"kubepack.dev/kubepack/pkg/lib"
 )
 
+var FlowStore = map[string]*flowapi.FlowState{}
+
 type ActionRunner struct {
 	dc           dynamic.Interface
 	ClientGetter genericclioptions.RESTClientGetter
@@ -36,6 +39,7 @@ type ActionRunner struct {
 	FlowName  string
 	Namespace string
 	action    flowapi.Action
+	EdgeList  []rsapi.NamedEdge
 	err       error
 }
 
@@ -109,7 +113,7 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		name := o.From.Src.Name
 
 		if o.From.UseRelease != "" && name == "" {
-			state, ok := actionx.FlowStore[o.From.UseRelease]
+			state, ok := FlowStore[o.From.UseRelease]
 			if !ok {
 				e.err = fmt.Errorf("can't find flow state for release %s", o.From.UseRelease)
 				return e
@@ -135,6 +139,28 @@ func (e *ActionRunner) Apply() *ActionRunner {
 						l.Add(v)
 					}
 				}
+
+				// initialize engine if needed
+				state.InitEngine.Do(func() {
+					options := chartutil.ReleaseOptions{
+						Name:      state.ReleaseName,
+						Namespace: e.Namespace,
+						Revision:  1,
+						IsInstall: !state.IsUpgrade,
+						IsUpgrade: state.IsUpgrade,
+					}
+					valuesToRender, err := chartutil.ToRenderValues(state.Chrt, state.Values, options, state.Capabilities)
+					if err != nil {
+						e.err = fmt.Errorf("failed to initialize engine, reason; %v", err)
+						klog.Errorln(err)
+						return
+					}
+					state.Engine = new(engine.Engine).NewInstance(state.Chrt, valuesToRender) // reuse engine
+				})
+				if e.err != nil {
+					return e
+				}
+
 				l, err = state.Engine.Render(l)
 				if err != nil {
 					e.err = err
@@ -172,7 +198,7 @@ func (e *ActionRunner) Apply() *ActionRunner {
 				Namespace: e.Namespace,
 			},
 			Path: o.From.Paths,
-		}, nil)
+		}, e.EdgeList)
 		if err != nil {
 			e.err = err
 			return e

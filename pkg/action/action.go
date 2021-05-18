@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tamalsaha/hell-flow/pkg/flowapi"
 	kubex "github.com/tamalsaha/hell-flow/pkg/kube"
 	driver2 "github.com/tamalsaha/hell-flow/pkg/storage/driver"
 
@@ -42,8 +41,6 @@ import (
 type Configuration struct {
 	action.Configuration
 }
-
-var FlowStore = map[string]*flowapi.FlowState{}
 
 // Init initializes the action configuration
 func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespace, helmDriver string, log action.DebugLog) error {
@@ -117,7 +114,6 @@ func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespac
 			rsmapper,
 		)
 		d.Log = log
-		d.FlowStore = FlowStore // capture state of each release
 		store = storage.Init(d)
 	case "secret", "secrets", "":
 		d := driver.NewSecrets(newSecretClient(lazyClient))

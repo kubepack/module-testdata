@@ -162,7 +162,7 @@ func main____() {
 			Atomic:       false,
 			SkipCRDs:     false,
 		})
-	rel, err := i.Run()
+	rel, _, err := i.Run()
 	if err != nil {
 		klog.Fatal(err)
 	}

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	actionx "github.com/tamalsaha/hell-flow/pkg/action"
+	"github.com/tamalsaha/hell-flow/pkg/flowapi"
 	"github.com/tamalsaha/hell-flow/pkg/values"
 
 	"helm.sh/helm/v3/pkg/action"
@@ -84,19 +85,19 @@ func (x *Upgrader) WithReleaseName(name string) *Upgrader {
 	return x
 }
 
-func (x *Upgrader) Run() (*release.Release, error) {
+func (x *Upgrader) Run() (*release.Release, *flowapi.FlowState, error) {
 	if x.opts.Version == "" && x.opts.Devel {
 		debug("setting version to >0.0.0-0")
 		x.opts.Version = ">0.0.0-0"
 	}
 
 	if x.reg == nil {
-		return nil, errors.New("x.reg is not set")
+		return nil, nil, errors.New("x.reg is not set")
 	}
 
 	chrt, err := x.reg.GetChart(x.opts.ChartURL, x.opts.ChartName, x.opts.Version)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	// TODO(tamal): Use constant
 	setAnnotations(chrt.Chart, "app.kubernetes.io/part-of", x.opts.PartOf)
@@ -119,13 +120,13 @@ func (x *Upgrader) Run() (*release.Release, error) {
 
 	validInstallableChart, err := libchart.IsChartInstallable(chrt.Chart)
 	if !validInstallableChart {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if chrt.Metadata.Deprecated {
 		_, err = fmt.Println("# WARNING: This chart is deprecated")
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -134,36 +135,49 @@ func (x *Upgrader) Run() (*release.Release, error) {
 		// As of Helm 2.4.0, this is treated as a stopping condition:
 		// https://github.com/helm/helm/issues/2209
 		if err := action.CheckDependencies(chrt.Chart, req); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
 	vals, err := x.opts.Values.MergeValues(chrt.Chart)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if data, ok := chrt.Chart.Metadata.Annotations["meta.x-helm.dev/editor"]; ok && data != "" {
 		var gvr metav1.GroupVersionResource
 		if err := json.Unmarshal([]byte(data), &gvr); err != nil {
-			return nil, fmt.Errorf("failed to parse %s annotation %s", "meta.x-helm.dev/editor", data)
+			return nil, nil, fmt.Errorf("failed to parse %s annotation %s", "meta.x-helm.dev/editor", data)
 		}
 		rls := types.NamespacedName{
 			Namespace: x.opts.Namespace,
 			Name:      x.releaseName,
 		}
 		if err := RefillMetadata(hub.NewRegistryOfKnownResources(), chrt.Chart.Values, vals, gvr, rls); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 	// chartutil.CoalesceValues(chrt, chrtVals) will use vals to render templates
 	chrt.Chart.Values = map[string]interface{}{}
 
-	return cmd.Run(x.releaseName, chrt.Chart, vals)
+	rls, err := cmd.Run(x.releaseName, chrt.Chart, vals)
+	if err != nil {
+		return nil, nil, err
+	}
+	caps, _ := x.cfg.GetCapabilities()
+	return rls, &flowapi.FlowState{
+		ReleaseName:  rls.Name,
+		Chrt:         rls.Chart,
+		Values:       rls.Config,
+		IsUpgrade:    true,
+		Capabilities: caps,
+		// Engine:       engine.EngineInstance{},
+		// InitEngine:   sync.Once{},
+	}, nil
 }
 
 func (x *Upgrader) Do() error {
 	var err error
-	x.result, err = x.Run()
+	x.result, _, err = x.Run()
 	return err
 }
 

@@ -1,6 +1,8 @@
 package flowapi
 
 import (
+	"sync"
+
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/engine"
@@ -10,16 +12,20 @@ import (
 )
 
 type FlowState struct {
-	ReleaseName string
-	Chrt        *chart.Chart
-	Values      chartutil.Values // final values used for rendering
-	Engine      engine.EngineInstance
+	ReleaseName  string
+	Chrt         *chart.Chart
+	Values       chartutil.Values // final values used for rendering
+	IsUpgrade    bool
+	Capabilities *chartutil.Capabilities
+
+	Engine     *engine.EngineInstance
+	InitEngine sync.Once
 }
 
 type Flow struct {
-	Name     string         `json:"name"` // should be metadata.name
-	Actions  []Action       `json:"actions"`
-	EdgeList []DirectedEdge `json:"edge_list"`
+	Name     string            `json:"name"` // should be metadata.name
+	Actions  []Action          `json:"actions"`
+	EdgeList []rsapi.NamedEdge `json:"edge_list"`
 }
 
 // Check array, map, etc
@@ -61,13 +67,6 @@ type ObjectLocator struct {
 	UseRelease string    `json:"use_release"`
 	Src        ObjectRef `json:"src"`
 	Paths      []string  `json:"paths"` // sequence of DirectedEdge names
-}
-
-type DirectedEdge struct {
-	Name       string
-	Src        metav1.TypeMeta
-	Dst        metav1.TypeMeta
-	Connection rsapi.ResourceConnectionSpec
 }
 
 type ObjectRef struct {
