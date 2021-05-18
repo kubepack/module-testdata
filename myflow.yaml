@@ -37,7 +37,7 @@ actions:
   prerequisites:
     required_resources:
     - group: apps
-      resource: pods
+      resource: deployments
       version: v1
   readiness_criteria:
     required_resources: null
