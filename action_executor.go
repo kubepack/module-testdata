@@ -99,15 +99,9 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		KVPairs:      nil,
 	}
 
-	mapper, err := e.ClientGetter.ToRESTMapper()
-	if err != nil {
-		e.err = err
-		return e
-	}
-
 	finder := graph.ObjectFinder{
 		Factory: dynamicfactory.New(e.dc),
-		Mapper:  discovery.NewResourceMapper(mapper),
+		Mapper:  e.mapper,
 	}
 
 	for _, o := range e.action.ValueOverrides {
@@ -232,6 +226,7 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		}
 	}
 
+	// Now pass this as replace values
 	vals, err := opts.MergeValues(chrt.Chart)
 	if err != nil {
 		e.err = err
@@ -245,13 +240,13 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		Engine:      new(engine.Engine).NewInstance(chrt.Chart, vals), // reuse engine
 	}
 
-	vt, err := InstallOrUpgrade(e.ClientGetter, e.Namespace, e.action.ChartRepoRef, e.action.ReleaseName, e.FlowName, values.Options{
+	vt, err := InstallOrUpgrade(e.ClientGetter, e.Namespace, e.action.ChartRepoRef, e.action.ReleaseName, e.FlowName, "storage.x-helm.dev/apps", values.Options{
 		ReplaceValues: vals,
 	})
 	if err != nil {
 		e.err = err
 	}
-	klog.Infoln("chart %+v %s", e.action.ChartRepoRef, vt)
+	klog.Infof("chart %+v %s", e.action.ChartRepoRef, vt)
 
 	return e
 }

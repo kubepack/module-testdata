@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	actionx "github.com/tamalsaha/hell-flow/pkg/action"
 	"github.com/tamalsaha/hell-flow/pkg/lib/action"
@@ -24,9 +25,7 @@ type ChartLocator struct {
 	Version string
 }
 
-func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace string, ref rsapi.ChartRepoRef, releaseName, partOf string, opts values.Options) (kutil.VerbType, error) {
-	helmDriver := "secrets"
-
+func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace string, ref rsapi.ChartRepoRef, releaseName, partOf, helmDriver string, opts values.Options) (kutil.VerbType, error) {
 	cfg := new(actionx.Configuration)
 	// TODO: Use secret driver for which namespace?
 	err := cfg.Init(getter, namespace, helmDriver, debug)
@@ -49,9 +48,9 @@ func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace strin
 				DryRun:       false,
 				DisableHooks: false,
 				Replace:      false,
-				Wait:         false,
+				Wait:         true,
 				Devel:        false,
-				Timeout:      0,
+				Timeout:      15 * time.Minute,
 				Namespace:    namespace,
 				ReleaseName:  releaseName,
 				Atomic:       false,
@@ -79,8 +78,8 @@ func InstallOrUpgrade(getter genericclioptions.RESTClientGetter, namespace strin
 			Install:       false,
 			Devel:         false,
 			Namespace:     namespace,
-			Timeout:       0,
-			Wait:          false,
+			Timeout:       15 * time.Minute,
+			Wait:          true,
 			DisableHooks:  false,
 			DryRun:        false,
 			Force:         false,

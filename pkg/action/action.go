@@ -53,7 +53,7 @@ func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespac
 		client.Log = log
 		kc = client
 		factory = client.Factory
-	default:
+	case "storage.x-helm.dev/apps":
 		client, err := kubex.New(getter, log)
 		if err != nil {
 			return err
@@ -76,7 +76,7 @@ func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespac
 
 	var store *storage.Storage
 	switch helmDriver {
-	case "app", "apps", "application", "applications", "editor":
+	case "storage.x-helm.dev/apps":
 		config, err := factory.ToRawKubeConfigLoader().ClientConfig()
 		if err != nil {
 			return err

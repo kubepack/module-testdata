@@ -185,7 +185,7 @@ func main_install_or_upgrdae() {
 		URL:     url,
 		Name:    name,
 		Version: version,
-	}, name, "", values.Options{})
+	}, name, "", "secrets", values.Options{})
 	if err != nil {
 		klog.Fatal(err)
 	}
@@ -219,59 +219,19 @@ func main() {
 
 	for _, action := range myflow.Actions {
 		runner := ActionRunner{
-			dc:        dc,
-			mapper:    discovery.NewResourceMapper(mapper),
-			flowstore: flowstore,
-			FlowName:  myflow.Name,
-			action:    action,
-			Namespace: "default",
+			dc:           dc,
+			ClientGetter: getter,
+			mapper:       discovery.NewResourceMapper(mapper),
+			flowstore:    flowstore,
+			FlowName:     myflow.Name,
+			Namespace:    "default",
+			action:       action,
 		}
 		err := runner.Execute()
 		if err != nil {
 			klog.Fatalln(err)
 		}
 	}
-
-	gvrNode := schema.GroupVersionResource{
-		Group:    "",
-		Version:  "v1",
-		Resource: "nodes",
-	}
-	_, err = dc.Resource(gvrNode).List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		panic(err)
-	}
-
-	namespace := "default"
-	i, err := action.NewInstaller(getter, namespace, "secret")
-	if err != nil {
-		klog.Fatal(err)
-	}
-	i.WithRegistry(lib.DefaultRegistry).
-		WithOptions(action.InstallOptions{
-			ChartURL:  url,
-			ChartName: name,
-			Version:   version,
-			Values: values.Options{
-				ValuesFile:  "",
-				ValuesPatch: nil,
-			},
-			DryRun:       false,
-			DisableHooks: false,
-			Replace:      false,
-			Wait:         false,
-			Devel:        false,
-			Timeout:      0,
-			Namespace:    namespace,
-			ReleaseName:  name,
-			Atomic:       false,
-			SkipCRDs:     false,
-		})
-	rel, err := i.Run()
-	if err != nil {
-		klog.Fatal(err)
-	}
-	klog.Infoln(rel)
 }
 
 func main_tpllist() {
@@ -348,4 +308,9 @@ func main_set_values() {
 
 func main_print_yaml() {
 	print_yaml()
+}
+
+func main_map() {
+	var m map[string]string = nil
+	fmt.Println(m["d"])
 }

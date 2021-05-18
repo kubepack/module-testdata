@@ -44,7 +44,7 @@ const (
 var _ driver.Driver = (*Applications)(nil)
 
 // ApplicationsDriverName is the string name of the driver.
-const ApplicationsDriverName = "Kubepack" // changed from Application
+const ApplicationsDriverName = "storage.x-helm.dev/apps"
 
 // Applications is a wrapper around an implementation of a kubernetes
 // ApplicationsInterface.
