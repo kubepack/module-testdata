@@ -193,7 +193,7 @@ func main_install_or_upgrdae() {
 	klog.Infof("Chart %s", vt)
 }
 
-func main() {
+func main_test() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
