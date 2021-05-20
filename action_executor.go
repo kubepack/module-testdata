@@ -10,10 +10,7 @@ import (
 	"time"
 
 	"github.com/tamalsaha/hell-flow/pkg/flowapi"
-	"kubepack.dev/lib-helm/pkg/values"
 
-	"helm.sh/helm/v3/pkg/chartutil"
-	"helm.sh/helm/v3/pkg/engine"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -27,9 +24,12 @@ import (
 	"kmodules.xyz/resource-metadata/pkg/tableconvertor"
 	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
 	"kubepack.dev/kubepack/pkg/lib"
+	"kubepack.dev/lib-helm/pkg/action"
+	"kubepack.dev/lib-helm/pkg/engine"
+	"kubepack.dev/lib-helm/pkg/values"
 )
 
-var FlowStore = map[string]*flowapi.FlowState{}
+var FlowStore = map[string]*engine.State{}
 
 type ActionRunner struct {
 	dc           dynamic.Interface
@@ -141,26 +141,12 @@ func (e *ActionRunner) Apply() *ActionRunner {
 				}
 
 				// initialize engine if needed
-				state.InitEngine.Do(func() {
-					options := chartutil.ReleaseOptions{
-						Name:      state.ReleaseName,
-						Namespace: e.Namespace,
-						Revision:  1,
-						IsInstall: !state.IsUpgrade,
-						IsUpgrade: state.IsUpgrade,
-					}
-					valuesToRender, err := chartutil.ToRenderValues(state.Chrt, state.Values, options, state.Capabilities)
-					if err != nil {
-						e.err = fmt.Errorf("failed to initialize engine, reason; %v", err)
-						klog.Errorln(err)
-						return
-					}
-					state.Engine = new(engine.Engine).NewInstance(state.Chrt, valuesToRender) // reuse engine
-				})
-				if e.err != nil {
+				err = state.Init()
+				if err != nil {
+					e.err = fmt.Errorf("failed to initialize engine, reason; %v", err)
+					klog.Errorln(err)
 					return e
 				}
-
 				l, err = state.Engine.Render(l)
 				if err != nil {
 					e.err = err
@@ -259,13 +245,42 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		return e
 	}
 
-	vt, err := InstallOrUpgrade(e.ClientGetter, e.Namespace, e.action.ChartRepoRef, e.action.ReleaseName, e.FlowName, "storage.x-helm.dev/apps", values.Options{
-		ReplaceValues: vals,
+	deployer, err := action.NewDeployer(e.ClientGetter, e.Namespace, "storage.x-helm.dev/apps")
+	if err != nil {
+		e.err = err
+		return e
+	}
+	deployer.WithRegistry(lib.DefaultRegistry).WithOptions(action.DeployOptions{
+		ChartURL:  e.action.ChartRepoRef.URL,
+		ChartName: e.action.ChartRepoRef.Name,
+		Version:   e.action.ChartRepoRef.Version,
+		Values: values.Options{
+			ReplaceValues: vals,
+		},
+		DryRun:                   false,
+		DisableHooks:             false,
+		Replace:                  false,
+		Wait:                     true,
+		Devel:                    false,
+		Timeout:                  15 * time.Minute,
+		Namespace:                e.Namespace,
+		ReleaseName:              e.action.ReleaseName,
+		Description:              "Deploy Flow",
+		Atomic:                   false,
+		SkipCRDs:                 true,
+		SubNotes:                 false,
+		DisableOpenAPIValidation: false,
+		IncludeCRDs:              false,
+		PartOf:                   e.FlowName,
+		Force:                    false,
+		Recreate:                 false,
+		CleanupOnFail:            false,
 	})
+	_, s2, err := deployer.Run()
 	if err != nil {
 		e.err = err
 	}
-	klog.Infof("chart %+v %s", e.action.ChartRepoRef, vt)
+	FlowStore[s2.ReleaseName] = s2
 
 	return e
 }

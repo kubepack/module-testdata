@@ -10,8 +10,6 @@ import (
 	"text/template"
 
 	"github.com/tamalsaha/hell-flow/pkg/flowapi"
-	"kubepack.dev/lib-helm/pkg/action"
-	"kubepack.dev/lib-helm/pkg/values"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,9 +25,10 @@ import (
 	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/discovery"
 	clientcmdutil "kmodules.xyz/client-go/tools/clientcmd"
-	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 	"kmodules.xyz/resource-metadata/pkg/tableconvertor"
 	"kubepack.dev/kubepack/pkg/lib"
+	"kubepack.dev/lib-helm/pkg/action"
+	"kubepack.dev/lib-helm/pkg/values"
 	"sigs.k8s.io/yaml"
 )
 
@@ -182,15 +181,38 @@ func main_install_or_upgrdae() {
 	}
 	getter := clientcmdutil.NewClientGetter(&kubeconfig)
 
-	vt, err := InstallOrUpgrade(getter, "default", rsapi.ChartRepoRef{
-		URL:     url,
-		Name:    name,
-		Version: version,
-	}, name, "", "secrets", values.Options{})
+	deployer, err := action.NewDeployer(getter, "default", "secrets")
 	if err != nil {
 		klog.Fatal(err)
 	}
-	klog.Infof("Chart %s", vt)
+	deployer.WithRegistry(lib.DefaultRegistry).WithOptions(action.DeployOptions{
+		ChartURL:                 url,
+		ChartName:                name,
+		Version:                  version,
+		Values:                   values.Options{},
+		DryRun:                   false,
+		DisableHooks:             false,
+		Replace:                  false,
+		Wait:                     false,
+		Devel:                    false,
+		Timeout:                  0,
+		Namespace:                "default",
+		ReleaseName:              name,
+		Description:              "",
+		Atomic:                   false,
+		SkipCRDs:                 false,
+		SubNotes:                 false,
+		DisableOpenAPIValidation: false,
+		IncludeCRDs:              false,
+		PartOf:                   "",
+		Force:                    false,
+		Recreate:                 false,
+		CleanupOnFail:            false,
+	})
+	_, _, err = deployer.Run()
+	if err != nil {
+		klog.Fatal(err)
+	}
 }
 
 func main_test() {
@@ -308,7 +330,7 @@ func main_print_yaml() {
 	print_yaml()
 }
 
-func main_map() {
+func main() {
 	var m map[string]string = nil
 	fmt.Println(m["d"])
 }
