@@ -11,17 +11,6 @@ import (
 	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 )
 
-type FlowState struct {
-	ReleaseName  string
-	Chrt         *chart.Chart
-	Values       chartutil.Values // final values used for rendering
-	IsUpgrade    bool
-	Capabilities *chartutil.Capabilities
-
-	Engine     *engine.EngineInstance
-	InitEngine sync.Once
-}
-
 type Flow struct {
 	Name     string            `json:"name"` // should be metadata.name
 	Actions  []Action          `json:"actions"`

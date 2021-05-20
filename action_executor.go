@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/tamalsaha/hell-flow/pkg/flowapi"
-	"github.com/tamalsaha/hell-flow/pkg/values"
+	"kubepack.dev/lib-helm/pkg/values"
 
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/engine"

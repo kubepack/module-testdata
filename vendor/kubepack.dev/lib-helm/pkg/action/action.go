@@ -20,10 +20,7 @@ import (
 	"fmt"
 	"os"
 
-	kubex "github.com/tamalsaha/hell-flow/pkg/kube"
-	driver2 "github.com/tamalsaha/hell-flow/pkg/storage/driver"
-
-	"helm.sh/helm/v3/pkg/action"
+	ha "helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/storage"
 	"helm.sh/helm/v3/pkg/storage/driver"
@@ -32,18 +29,20 @@ import (
 	"k8s.io/client-go/dynamic"
 	"kmodules.xyz/client-go/apiextensions"
 	disco_util "kmodules.xyz/client-go/discovery"
-	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
+	"kubepack.dev/lib-helm/pkg/application"
+	kubex "kubepack.dev/lib-helm/pkg/kube"
+	driver2 "kubepack.dev/lib-helm/pkg/storage/driver"
 	"sigs.k8s.io/application/api/app/v1beta1"
 	appcs "sigs.k8s.io/application/client/clientset/versioned"
 )
 
 // Configuration injects the dependencies that all actions share.
 type Configuration struct {
-	action.Configuration
+	ha.Configuration
 }
 
 // Init initializes the action configuration
-func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespace, helmDriver string, log action.DebugLog) error {
+func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespace, helmDriver string, log ha.DebugLog) error {
 	var kc kube.Interface
 	var factory kube.Factory
 
@@ -93,7 +92,7 @@ func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespac
 		if !appcrdRegistered {
 			// register Application CRD
 			crds := []*apiextensions.CustomResourceDefinition{
-				v1alpha1.ApplicationCustomResourceDefinition(),
+				application.CustomResourceDefinition(),
 			}
 			restcfg, err := getter.ToRESTConfig()
 			if err != nil {

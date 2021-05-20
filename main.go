@@ -10,8 +10,8 @@ import (
 	"text/template"
 
 	"github.com/tamalsaha/hell-flow/pkg/flowapi"
-	"github.com/tamalsaha/hell-flow/pkg/lib/action"
-	"github.com/tamalsaha/hell-flow/pkg/values"
+	"kubepack.dev/lib-helm/pkg/action"
+	"kubepack.dev/lib-helm/pkg/values"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

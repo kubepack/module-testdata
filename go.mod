@@ -3,28 +3,17 @@ module github.com/tamalsaha/hell-flow
 go 1.16
 
 require (
-	github.com/evanphx/json-patch v4.9.0+incompatible
-	github.com/gabriel-vasile/mimetype v1.2.0
 	github.com/go-errors/errors v1.0.2 // indirect
-	github.com/gobuffalo/flect v0.2.2
-	github.com/imdario/mergo v0.3.11
-	github.com/pkg/errors v0.9.1
 	helm.sh/helm/v3 v3.5.2
-	k8s.io/api v0.21.0
-	k8s.io/apiextensions-apiserver v0.21.0
 	k8s.io/apimachinery v0.21.0
 	k8s.io/cli-runtime v0.21.0
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog/v2 v2.8.0
-	k8s.io/kubectl v0.21.0
-	kmodules.xyz/apply v0.0.0-20210503080849-eb226c295465
 	kmodules.xyz/client-go v0.0.0-20210514054158-27e164b43474
 	kmodules.xyz/resource-metadata v0.5.5-0.20210518185031-147bfd9e841c
-	kubepack.dev/kubepack v0.3.4-0.20210517091307-2e83ade65e8e
-	kubepack.dev/lib-helm v0.2.4-0.20210504075710-8653e4557a39
-	sigs.k8s.io/application v0.8.2-0.20200306235134-f10d9ca8abd4
+	kubepack.dev/kubepack v0.3.4-0.20210520194934-caa30b1e0d68
+	kubepack.dev/lib-helm v0.2.4-0.20210520194150-305faa644d29
 	sigs.k8s.io/cli-utils v0.25.0
-	sigs.k8s.io/controller-runtime v0.9.0-beta.2
 	sigs.k8s.io/yaml v1.2.0
 )
 
