@@ -9,8 +9,6 @@ import (
 	"text/template"
 	"time"
 
-	flowapi "kubepack.dev/flow-api/apis/module/v1alpha1"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -22,6 +20,7 @@ import (
 	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 	"kmodules.xyz/resource-metadata/pkg/graph"
 	"kmodules.xyz/resource-metadata/pkg/tableconvertor"
+	flowapi "kubepack.dev/flow-api/apis/module/v1alpha1"
 	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
 	"kubepack.dev/kubepack/pkg/lib"
 	"kubepack.dev/lib-helm/pkg/action"
@@ -272,6 +271,7 @@ func (e *ActionRunner) Apply() *ActionRunner {
 		DisableOpenAPIValidation: false,
 		IncludeCRDs:              false,
 		PartOf:                   e.FlowName,
+		CreateNamespace:          true,
 		Force:                    false,
 		Recreate:                 false,
 		CleanupOnFail:            false,

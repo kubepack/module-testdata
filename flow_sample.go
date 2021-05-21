@@ -1,10 +1,9 @@
 package main
 
 import (
-	flowapi "kubepack.dev/flow-api/apis/module/v1alpha1"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
+	flowapi "kubepack.dev/flow-api/apis/module/v1alpha1"
 )
 
 var myflow = &flowapi.Flow{
@@ -13,7 +12,7 @@ var myflow = &flowapi.Flow{
 		Kind:       "Flow",
 	},
 	ObjectMeta: metav1.ObjectMeta{
-		Name: "myflow",
+		Name:      "myflow",
 		Namespace: "demo",
 	},
 	Spec: flowapi.FlowSpec{

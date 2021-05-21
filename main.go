@@ -9,8 +9,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	flowapi "kubepack.dev/flow-api/apis/module/v1alpha1"
-
+	flowcontrol "k8s.io/api/flowcontrol/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -26,6 +25,7 @@ import (
 	"kmodules.xyz/client-go/discovery"
 	clientcmdutil "kmodules.xyz/client-go/tools/clientcmd"
 	"kmodules.xyz/resource-metadata/pkg/tableconvertor"
+	flowapi "kubepack.dev/flow-api/apis/module/v1alpha1"
 	"kubepack.dev/kubepack/pkg/lib"
 	"kubepack.dev/lib-helm/pkg/action"
 	"kubepack.dev/lib-helm/pkg/values"
@@ -215,7 +215,7 @@ func main_install_or_upgrdae() {
 	}
 }
 
-func main_test() {
+func main() {
 	print_yaml()
 
 	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -330,7 +330,7 @@ func main_print_yaml() {
 	print_yaml()
 }
 
-func main() {
+func main_45() {
 	var m map[string]string = nil
 	fmt.Println(m["d"])
 }
@@ -378,4 +378,23 @@ func main_test_jp() {
 		fmt.Printf("%s=%v\n", kv.Key, buf.String())
 	}
 	buf.Reset()
+}
+
+func main_exists_test() {
+	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
+	if err != nil {
+		log.Fatalf("Could not get Kubernetes config: %s", err)
+	}
+	kc, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		klog.Fatal(err)
+	}
+	mapper := discovery.NewResourceMapper(discovery.NewRestMapper(kc.Discovery()))
+	gvr := flowcontrol.SchemeGroupVersion.WithResource("flowschemas")
+	gvr.Version = ""
+	exists, err := mapper.ExistsGVR(gvr)
+	if err != nil {
+		klog.Fatal(err)
+	}
+	fmt.Println(exists)
 }
