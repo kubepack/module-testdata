@@ -9,7 +9,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/tamalsaha/hell-flow/pkg/flowapi"
+	flowapi "kubepack.dev/flow-api/apis/module/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"

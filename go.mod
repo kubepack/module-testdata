@@ -4,13 +4,13 @@ go 1.16
 
 require (
 	github.com/go-errors/errors v1.0.2 // indirect
-	helm.sh/helm/v3 v3.5.2
 	k8s.io/apimachinery v0.21.0
 	k8s.io/cli-runtime v0.21.0
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog/v2 v2.8.0
 	kmodules.xyz/client-go v0.0.0-20210514054158-27e164b43474
 	kmodules.xyz/resource-metadata v0.5.5-0.20210518185031-147bfd9e841c
+	kubepack.dev/flow-api v0.0.0-20210520235604-5a2b27de4ba8
 	kubepack.dev/kubepack v0.3.4-0.20210520194934-caa30b1e0d68
 	kubepack.dev/lib-helm v0.2.4-0.20210520194150-305faa644d29
 	sigs.k8s.io/cli-utils v0.25.0

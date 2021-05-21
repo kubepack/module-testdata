@@ -722,7 +722,6 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 gopkg.in/yaml.v3
 # helm.sh/helm/v3 v3.5.2 => github.com/kubepack/helm/v3 v3.6.0-rc.1.0.20210518225915-c3e0ce48dd1b
-## explicit
 helm.sh/helm/v3/internal/experimental/registry
 helm.sh/helm/v3/internal/fileutil
 helm.sh/helm/v3/internal/ignore
@@ -1207,6 +1206,9 @@ kmodules.xyz/resource-metadata/hub/resourcedescriptors
 kmodules.xyz/resource-metadata/pkg/graph
 kmodules.xyz/resource-metadata/pkg/tableconvertor
 kmodules.xyz/resource-metadata/pkg/tableconvertor/printers
+# kubepack.dev/flow-api v0.0.0-20210520235604-5a2b27de4ba8
+## explicit
+kubepack.dev/flow-api/apis/module/v1alpha1
 # kubepack.dev/kubepack v0.3.4-0.20210520194934-caa30b1e0d68
 ## explicit
 kubepack.dev/kubepack/apis
@@ -1245,7 +1247,7 @@ sigs.k8s.io/cli-utils/pkg/kstatus/polling/statusreaders
 sigs.k8s.io/cli-utils/pkg/kstatus/polling/testutil
 sigs.k8s.io/cli-utils/pkg/kstatus/status
 sigs.k8s.io/cli-utils/pkg/object
-# sigs.k8s.io/controller-runtime v0.9.0-beta.2
+# sigs.k8s.io/controller-runtime v0.9.0-beta.5
 sigs.k8s.io/controller-runtime/pkg/client
 sigs.k8s.io/controller-runtime/pkg/client/apiutil
 sigs.k8s.io/controller-runtime/pkg/log

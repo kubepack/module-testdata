@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/tamalsaha/hell-flow/pkg/flowapi"
+	flowapi "kubepack.dev/flow-api/apis/module/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -238,7 +238,7 @@ func main_test() {
 		klog.Fatal(err)
 	}
 
-	for _, action := range myflow.Actions {
+	for _, action := range myflow.Spec.Actions {
 		runner := ActionRunner{
 			dc:           dc,
 			ClientGetter: getter,

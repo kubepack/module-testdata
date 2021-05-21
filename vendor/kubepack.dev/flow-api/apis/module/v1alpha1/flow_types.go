@@ -1,4 +1,20 @@
-package flowapi
+/*
+Copyright 2021.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -6,8 +22,8 @@ import (
 	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 )
 
-type Flow struct {
-	Name     string            `json:"name"` // should be metadata.name
+// FlowSpec defines the desired state of Flow
+type FlowSpec struct {
 	Actions  []Action          `json:"actions"`
 	EdgeList []rsapi.NamedEdge `json:"edge_list"`
 }
@@ -16,7 +32,7 @@ type Flow struct {
 // can this be always string like in --set keys?
 // Keep is such that we can always generate helm equivalent command
 type KV struct {
-	Key string
+	Key string `json:"key"`
 	// string, nil, null
 	Type string `json:"type"`
 	// format is an optional OpenAPI type definition for this column. The 'name' format is applied
@@ -34,7 +50,8 @@ type KV struct {
 	//
 	//
 	// Directly use path from object
-	Path string `json:"path"`
+	// +optional
+	Path string `json:"path,omitempty"`
 
 	// json patch operation
 	// See also: http://jsonpatch.com/
@@ -58,7 +75,6 @@ type ObjectRef struct {
 	Selector     *metav1.LabelSelector `json:"selector,omitempty"`
 	Name         string                `json:"name,omitempty"`
 	NameTemplate string                `json:"nameTemplate,omitempty"`
-	// Namespace always same as Workflow
 }
 
 type Action struct {
@@ -66,8 +82,6 @@ type Action struct {
 	ReleaseName string `json:"releaseName" protobuf:"bytes,3,opt,name=releaseName"`
 
 	rsapi.ChartRepoRef `json:",inline" protobuf:"bytes,1,opt,name=chartRef"`
-
-	// Namespace   string `json:"namespace" protobuf:"bytes,4,opt,name=namespace"`
 
 	ValuesFile string `json:"valuesFile,omitempty" protobuf:"bytes,6,opt,name=valuesFile"`
 	// RFC 6902 compatible json patch. ref: http://jsonpatch.com
@@ -103,11 +117,6 @@ type ChartRef struct {
 	Name string `json:"name" protobuf:"bytes,2,opt,name=name"`
 }
 
-type ResourceDefinitions struct {
-	Owned    []metav1.GroupVersionResource `json:"owned" protobuf:"bytes,1,rep,name=owned"`
-	Required []metav1.GroupVersionResource `json:"required" protobuf:"bytes,2,rep,name=required"`
-}
-
 // wait ([-f FILENAME] | resource.group/resource.name | resource.group [(-l label | --all)]) [--for=delete|--for condition=available]
 
 type WaitFlags struct {
@@ -116,4 +125,35 @@ type WaitFlags struct {
 	All          bool                  `json:"all" protobuf:"varint,3,opt,name=all"`
 	Timeout      metav1.Duration       `json:"timeout" protobuf:"bytes,4,opt,name=timeout"`
 	ForCondition string                `json:"for" protobuf:"bytes,5,opt,name=for"`
+}
+
+// FlowStatus defines the observed state of Flow
+type FlowStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+}
+
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+
+// Flow is the Schema for the flows API
+type Flow struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   FlowSpec   `json:"spec,omitempty"`
+	Status FlowStatus `json:"status,omitempty"`
+}
+
+//+kubebuilder:object:root=true
+
+// FlowList contains a list of Flow
+type FlowList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Flow `json:"items"`
+}
+
+func init() {
+	SchemeBuilder.Register(&Flow{}, &FlowList{})
 }
