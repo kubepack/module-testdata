@@ -244,7 +244,7 @@ func main() {
 			ClientGetter: getter,
 			mapper:       discovery.NewResourceMapper(mapper),
 			FlowName:     myflow.Name,
-			Namespace:    "demo",
+			Namespace:    myflow.Namespace,
 			action:       action,
 		}
 		err := runner.Execute()

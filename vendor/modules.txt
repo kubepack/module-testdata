@@ -909,7 +909,7 @@ k8s.io/apiserver/pkg/endpoints/deprecation
 k8s.io/cli-runtime/pkg/genericclioptions
 k8s.io/cli-runtime/pkg/printers
 k8s.io/cli-runtime/pkg/resource
-# k8s.io/client-go v12.0.0+incompatible => k8s.io/client-go v0.21.0
+# k8s.io/client-go v0.21.0 => k8s.io/client-go v0.21.0
 ## explicit
 k8s.io/client-go/applyconfigurations/admissionregistration/v1
 k8s.io/client-go/applyconfigurations/admissionregistration/v1beta1
@@ -1217,7 +1217,7 @@ kubepack.dev/kubepack/apis/kubepack
 kubepack.dev/kubepack/apis/kubepack/v1alpha1
 kubepack.dev/kubepack/crds
 kubepack.dev/kubepack/pkg/lib
-# kubepack.dev/lib-helm v0.2.4-0.20210521212334-7aa3301d0569
+# kubepack.dev/lib-helm v0.2.4-0.20210522032411-f41f7bc6f741
 ## explicit
 kubepack.dev/lib-helm/pkg/action
 kubepack.dev/lib-helm/pkg/application

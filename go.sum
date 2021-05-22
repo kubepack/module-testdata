@@ -1335,8 +1335,8 @@ kubepack.dev/flow-api v0.0.0-20210520235604-5a2b27de4ba8/go.mod h1:jLh5bfJefBxjX
 kubepack.dev/kubepack v0.3.4-0.20210520194934-caa30b1e0d68 h1:J+TKbA3FSmKwkMhtD1LwqvjAKpNAuvX2mVR7h7WH1NY=
 kubepack.dev/kubepack v0.3.4-0.20210520194934-caa30b1e0d68/go.mod h1:KJXxuhvjl8CkLqey0hEh1kkWZz0xezi+QGo797UUaVE=
 kubepack.dev/lib-helm v0.2.4-0.20210520194150-305faa644d29/go.mod h1:AuOMvWHSm3GvSAZueIz2ZO+0EswKl5OrbxK6tMSD2sU=
-kubepack.dev/lib-helm v0.2.4-0.20210521212334-7aa3301d0569 h1:sbDSUV1l6OnNmczK0UtWbTTsUfcNEYHmdAsQsrzwO1Y=
-kubepack.dev/lib-helm v0.2.4-0.20210521212334-7aa3301d0569/go.mod h1:AuOMvWHSm3GvSAZueIz2ZO+0EswKl5OrbxK6tMSD2sU=
+kubepack.dev/lib-helm v0.2.4-0.20210522032411-f41f7bc6f741 h1:axtD9VDbYSUDxIJvQvXAMhtaaLdqycYeaHYkNVSQgIY=
+kubepack.dev/lib-helm v0.2.4-0.20210522032411-f41f7bc6f741/go.mod h1:AuOMvWHSm3GvSAZueIz2ZO+0EswKl5OrbxK6tMSD2sU=
 modernc.org/cc v1.0.0/go.mod h1:1Sk4//wdnYJiUIxnW8ddKpaOJCF37yAdqYnkxUpaYxw=
 modernc.org/golex v1.0.0/go.mod h1:b/QX9oBD/LhixY6NDh+IdGv17hgB+51fET1i2kPSmvk=
 modernc.org/mathutil v1.0.0/go.mod h1:wU0vUrJsVWBZ4P6e7xtFJEhFSNsfRLJ8H458uRjg03k=
