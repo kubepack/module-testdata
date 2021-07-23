@@ -3,20 +3,20 @@ package main
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
-	flowapi "kubepack.dev/flow-api/apis/module/v1alpha1"
+	pkgapi "kubepack.dev/module/apis/pkg/v1alpha1"
 )
 
-var myflow = &flowapi.Flow{
+var myflow = &pkgapi.Flow{
 	TypeMeta: metav1.TypeMeta{
-		APIVersion: "x-helm.dev/v1alpha1",
+		APIVersion: "pkg.kubepack.com/v1alpha1",
 		Kind:       "Flow",
 	},
 	ObjectMeta: metav1.ObjectMeta{
 		Name:      "myflow",
 		Namespace: "demo",
 	},
-	Spec: flowapi.FlowSpec{
-		Actions: []flowapi.Action{
+	Spec: pkgapi.FlowSpec{
+		Actions: []pkgapi.Action{
 			{
 				ReleaseName: "first",
 				ChartRepoRef: rsapi.ChartRepoRef{
@@ -27,17 +27,17 @@ var myflow = &flowapi.Flow{
 				ValuesFile:     "",
 				ValuesPatch:    nil,
 				ValueOverrides: nil,
-				Prerequisites: flowapi.Prerequisites{
+				Prerequisites: pkgapi.Prerequisites{
 					RequiredResources: []metav1.GroupVersionResource{
 						{Group: "apps", Version: "v1", Resource: "deployments"},
 					},
 				},
-				ReadinessCriteria: flowapi.ReadinessCriteria{
+				ReadinessCriteria: pkgapi.ReadinessCriteria{
 					WaitForReconciled: true,
 					// check for installed crd
 					ResourcesExist: nil,
 					// Wait until LB IP is set
-					WaitFors: []flowapi.WaitFlags{
+					WaitFors: []pkgapi.WaitFlags{
 						//{
 						//	Resource:     GroupResource{
 						//		Group: "",
@@ -66,11 +66,11 @@ var myflow = &flowapi.Flow{
 				  echo "Visit http://127.0.0.1:8080 to use your application"
 				  kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
 				*/
-				ValueOverrides: []flowapi.LoadValue{
+				ValueOverrides: []pkgapi.LoadValue{
 					{
-						From: flowapi.ObjectLocator{
+						From: pkgapi.ObjectLocator{
 							UseRelease: "first",
-							Src: flowapi.ObjectRef{
+							Src: pkgapi.ObjectRef{
 								Target: metav1.TypeMeta{
 									Kind:       "Pod",
 									APIVersion: "v1",
@@ -86,7 +86,7 @@ var myflow = &flowapi.Flow{
 							},
 							Paths: nil,
 						},
-						Values: []flowapi.KV{
+						Values: []pkgapi.KV{
 							{
 								Key:          "first.name",
 								Type:         "string",
@@ -102,17 +102,17 @@ var myflow = &flowapi.Flow{
 						},
 					},
 				},
-				Prerequisites: flowapi.Prerequisites{
+				Prerequisites: pkgapi.Prerequisites{
 					RequiredResources: []metav1.GroupVersionResource{
 						{Group: "apps", Version: "v1", Resource: "deployments"},
 					},
 				},
-				ReadinessCriteria: flowapi.ReadinessCriteria{
+				ReadinessCriteria: pkgapi.ReadinessCriteria{
 					WaitForReconciled: true,
 					// check for installed crd
 					ResourcesExist: nil,
 					// Wait until LB IP is set
-					WaitFors: []flowapi.WaitFlags{
+					WaitFors: []pkgapi.WaitFlags{
 						//{
 						//	Resource:     GroupResource{
 						//		Group: "",

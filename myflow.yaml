@@ -1,4 +1,4 @@
-apiVersion: x-helm.dev/v1alpha1
+apiVersion: pkg.kubepack.com/v1alpha1
 kind: Flow
 metadata:
   creationTimestamp: null

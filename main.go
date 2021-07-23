@@ -25,10 +25,10 @@ import (
 	"kmodules.xyz/client-go/discovery"
 	clientcmdutil "kmodules.xyz/client-go/tools/clientcmd"
 	"kmodules.xyz/resource-metadata/pkg/tableconvertor"
-	flowapi "kubepack.dev/flow-api/apis/module/v1alpha1"
 	"kubepack.dev/kubepack/pkg/lib"
 	"kubepack.dev/lib-helm/pkg/action"
 	"kubepack.dev/lib-helm/pkg/values"
+	pkgapi "kubepack.dev/module/apis/pkg/v1alpha1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -352,7 +352,7 @@ func main_test_jp() {
 	if err != nil {
 		panic(err)
 	}
-	kv := flowapi.KV{
+	kv := pkgapi.KV{
 		Key:          "first.port",
 		Type:         "string",
 		PathTemplate: `{{ jp "{.spec.containers[0].ports[0].containerPort}" . }}`,

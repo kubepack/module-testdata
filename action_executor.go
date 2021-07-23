@@ -20,12 +20,12 @@ import (
 	rsapi "kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 	"kmodules.xyz/resource-metadata/pkg/graph"
 	"kmodules.xyz/resource-metadata/pkg/tableconvertor"
-	flowapi "kubepack.dev/flow-api/apis/module/v1alpha1"
 	"kubepack.dev/kubepack/apis/kubepack/v1alpha1"
 	"kubepack.dev/kubepack/pkg/lib"
 	"kubepack.dev/lib-helm/pkg/action"
 	"kubepack.dev/lib-helm/pkg/engine"
 	"kubepack.dev/lib-helm/pkg/values"
+	pkgapi "kubepack.dev/module/apis/pkg/v1alpha1"
 )
 
 var FlowStore = map[string]*engine.State{}
@@ -37,7 +37,7 @@ type ActionRunner struct {
 
 	FlowName  string
 	Namespace string
-	action    flowapi.Action
+	action    pkgapi.Action
 	EdgeList  []rsapi.NamedEdge
 	err       error
 }

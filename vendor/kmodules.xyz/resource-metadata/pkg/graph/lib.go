@@ -26,6 +26,7 @@ import (
 
 	disco_util "kmodules.xyz/client-go/discovery"
 	dynamicfactory "kmodules.xyz/client-go/dynamic/factory"
+	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/resource-metadata/apis/meta/v1alpha1"
 
 	"github.com/mitchellh/mapstructure"
@@ -146,6 +147,47 @@ func (finder ObjectFinder) List(src *unstructured.Unstructured, path []*Edge) ([
 	}
 
 	return out, nil
+}
+
+func (finder ObjectFinder) ListConnectedResources(src *unstructured.Unstructured, edges AdjacencyMap) (map[schema.GroupVersionResource][]*unstructured.Unstructured, error) {
+	result := make(map[schema.GroupVersionResource][]*unstructured.Unstructured)
+
+	for dstGVR, e := range edges {
+		objects, err := finder.ResourcesFor(src, e)
+		if kerr.IsNotFound(err) || len(objects) == 0 {
+			continue
+		} else if err != nil {
+			return nil, err
+		}
+		result[dstGVR] = objects
+	}
+
+	return result, nil
+}
+
+func (finder ObjectFinder) ListConnectedPartials(src *unstructured.Unstructured, edges AdjacencyMap) (map[schema.GroupVersionResource][]*metav1.PartialObjectMetadata, error) {
+	result := make(map[schema.GroupVersionResource][]*metav1.PartialObjectMetadata)
+
+	for dstGVR, e := range edges {
+		objects, err := finder.ResourcesFor(src, e)
+		if kerr.IsNotFound(err) || len(objects) == 0 {
+			continue
+		} else if err != nil {
+			return nil, err
+		}
+		partials := make([]*metav1.PartialObjectMetadata, 0, len(objects))
+		for _, obj := range objects {
+			var pt metav1.PartialObjectMetadata
+			if err = meta.DecodeObject(obj.UnstructuredContent(), &pt); err != nil {
+				return nil, err
+			} else {
+				partials = append(partials, &pt)
+			}
+		}
+		result[dstGVR] = partials
+	}
+
+	return result, nil
 }
 
 func (finder ObjectFinder) ResourcesFor(src *unstructured.Unstructured, e *Edge) ([]*unstructured.Unstructured, error) {
