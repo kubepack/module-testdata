@@ -9,7 +9,7 @@ entries:
     name: first
     type: application
     urls:
-    - https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/first/first-0.1.0.tgz
+    - https://raw.githubusercontent.com/kubepack/module-testdata/master/stable/first/first-0.1.0.tgz
     version: 0.1.0
   second:
   - apiVersion: v2
@@ -20,7 +20,7 @@ entries:
     name: second
     type: application
     urls:
-    - https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/second/second-0.1.0.tgz
+    - https://raw.githubusercontent.com/kubepack/module-testdata/master/stable/second/second-0.1.0.tgz
     version: 0.1.0
   third:
   - apiVersion: v2
@@ -31,6 +31,6 @@ entries:
     name: third
     type: application
     urls:
-    - https://raw.githubusercontent.com/tamalsaha/hell-flow/master/stable/third/third-0.1.0.tgz
+    - https://raw.githubusercontent.com/kubepack/module-testdata/master/stable/third/third-0.1.0.tgz
     version: 0.1.0
 generated: "2021-05-18T13:00:53.454869848-07:00"

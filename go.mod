@@ -1,4 +1,4 @@
-module github.com/tamalsaha/hell-flow
+module github.com/kubepack/module-testdata
 
 go 1.16
 
