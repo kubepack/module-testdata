@@ -5,9 +5,18 @@ import (
 	"github.com/kubepack/module-testdata/charts"
 	"io/fs"
 	"k8s.io/klog/v2"
+	"net/url"
 )
 
 func main() {
+	u2, err := url.Parse("embed:///first")
+	if err != nil {
+		klog.Fatalln(err)
+	}
+	fmt.Println(u2.Scheme)
+	fmt.Println(u2.Path)
+
+
 	//fi, err := os.Lstat("/home/tamal/go/src/kubepack.dev/module-testdata/charts/first/templates/service.yaml")
 	//if err != nil {
 	//	klog.Fatalln(err)
