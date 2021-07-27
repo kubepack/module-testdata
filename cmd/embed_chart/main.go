@@ -13,7 +13,7 @@ func main() {
 			return err
 		}
 		fmt.Println(path)
-		fmt.Println(d.Name(), "dir =", d.IsDir())
+		// fmt.Println(d.Name(), "dir =", d.IsDir())
 		return nil
 	})
 }
