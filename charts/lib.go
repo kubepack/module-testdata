@@ -4,5 +4,5 @@ import (
 	"embed"
 )
 
-//go:embed first second third **/**/_helpers.tpl
+//go:embed ** **/**/_helpers.tpl **/.helmignore
 var FS embed.FS
