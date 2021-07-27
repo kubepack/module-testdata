@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	fs.WalkDir(charts.FS, "", func(path string, d fs.DirEntry, err error) error {
+	fs.WalkDir(charts.FS, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
