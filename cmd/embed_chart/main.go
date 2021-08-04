@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/kubepack/module-testdata/charts"
 	"io/fs"
-	"k8s.io/klog/v2"
 	"net/url"
+
+	"github.com/kubepack/module-testdata/charts"
+	"k8s.io/klog/v2"
 )
 
 func main() {
@@ -15,7 +16,6 @@ func main() {
 	}
 	fmt.Println(u2.Scheme)
 	fmt.Println(u2.Path)
-
 
 	//fi, err := os.Lstat("/home/tamal/go/src/kubepack.dev/module-testdata/charts/first/templates/service.yaml")
 	//if err != nil {
