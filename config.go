@@ -2,8 +2,7 @@ package main
 
 import "fmt"
 
-type BaseConfig struct {
-}
+type BaseConfig struct{}
 
 func (c *BaseConfig) Init(s string) {
 	fmt.Println("BaseConfig", "-", s)
