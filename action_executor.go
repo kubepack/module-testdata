@@ -192,11 +192,11 @@ func (e *ActionRunner) Apply() *ActionRunner {
 
 		var buf bytes.Buffer
 		for _, kv := range o.Values {
-			//kv.Type
-			//kv.Format
-			//kv.Key
-			//kv.Path
-			//kv.PathTemplate
+			// kv.Type
+			// kv.Format
+			// kv.Key
+			// kv.Path
+			// kv.PathTemplate
 			if kv.PathTemplate != "" {
 				tpl, err := template.New("").Funcs(tableconvertor.TxtFuncMap()).Parse(kv.PathTemplate)
 				if err != nil {
