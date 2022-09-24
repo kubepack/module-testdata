@@ -20,7 +20,7 @@ type Setup struct {
 
 // setupDirectories creates directories for reading test configuration from
 func SetupDirectories(t *testing.T, dirs ...string) Setup {
-	d, err := ioutil.TempDir("", "kyaml-test")
+	d, err := os.MkdirTemp("", "kyaml-test")
 	if !assert.NoError(t, err) {
 		assert.FailNow(t, err.Error())
 	}
@@ -43,7 +43,7 @@ func (s Setup) WriteFile(t *testing.T, path string, value []byte) {
 	if !assert.NoError(t, err) {
 		assert.FailNow(t, err.Error())
 	}
-	err = ioutil.WriteFile(filepath.Join(s.Root, path), value, 0600)
+	err = os.WriteFile(filepath.Join(s.Root, path), value, 0600)
 	if !assert.NoError(t, err) {
 		assert.FailNow(t, err.Error())
 	}

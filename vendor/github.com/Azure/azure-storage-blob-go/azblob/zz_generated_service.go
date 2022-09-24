@@ -103,7 +103,7 @@ func (client serviceClient) filterBlobsResponder(resp pipeline.Response) (pipeli
 		return result, err
 	}
 	defer resp.Response().Body.Close()
-	b, err := ioutil.ReadAll(resp.Response().Body)
+	b, err := io.ReadAll(resp.Response().Body)
 	if err != nil {
 		return result, err
 	}
@@ -211,7 +211,7 @@ func (client serviceClient) getPropertiesResponder(resp pipeline.Response) (pipe
 		return result, err
 	}
 	defer resp.Response().Body.Close()
-	b, err := ioutil.ReadAll(resp.Response().Body)
+	b, err := io.ReadAll(resp.Response().Body)
 	if err != nil {
 		return result, err
 	}
@@ -281,7 +281,7 @@ func (client serviceClient) getStatisticsResponder(resp pipeline.Response) (pipe
 		return result, err
 	}
 	defer resp.Response().Body.Close()
-	b, err := ioutil.ReadAll(resp.Response().Body)
+	b, err := io.ReadAll(resp.Response().Body)
 	if err != nil {
 		return result, err
 	}
@@ -360,7 +360,7 @@ func (client serviceClient) getUserDelegationKeyResponder(resp pipeline.Response
 		return result, err
 	}
 	defer resp.Response().Body.Close()
-	b, err := ioutil.ReadAll(resp.Response().Body)
+	b, err := io.ReadAll(resp.Response().Body)
 	if err != nil {
 		return result, err
 	}
@@ -455,7 +455,7 @@ func (client serviceClient) listContainersSegmentResponder(resp pipeline.Respons
 		return result, err
 	}
 	defer resp.Response().Body.Close()
-	b, err := ioutil.ReadAll(resp.Response().Body)
+	b, err := io.ReadAll(resp.Response().Body)
 	if err != nil {
 		return result, err
 	}

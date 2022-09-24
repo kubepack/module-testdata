@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"text/template"
 
@@ -37,7 +37,7 @@ func print_yaml() {
 	if err != nil {
 		panic(err)
 	}
-	err = ioutil.WriteFile("myflow.yaml", data, 0644)
+	err = os.WriteFile("myflow.yaml", data, 0o644)
 	if err != nil {
 		panic(err)
 	}
@@ -100,9 +100,9 @@ var (
 	masterURL      = ""
 	kubeconfigPath = filepath.Join(homedir.HomeDir(), ".kube", "config")
 
-	//url     = "https://charts.appscode.com/stable/"
-	//name    = "kubedb"
-	//version = "v0.13.0-rc.0"
+	// url     = "https://charts.appscode.com/stable/"
+	// name    = "kubedb"
+	// version = "v0.13.0-rc.0"
 
 	url     = "https://raw.githubusercontent.com/kubepack/module-testdata/master/stable/"
 	name    = "first"
