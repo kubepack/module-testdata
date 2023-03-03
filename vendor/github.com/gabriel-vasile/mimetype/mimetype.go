@@ -40,7 +40,7 @@ func DetectReader(r io.Reader) (*MIME, error) {
 	var err error
 
 	if readLimit == 0 {
-		in, err = ioutil.ReadAll(r)
+		in, err = io.ReadAll(r)
 		if err != nil {
 			return root, err
 		}

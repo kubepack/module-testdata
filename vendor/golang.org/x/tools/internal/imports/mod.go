@@ -352,7 +352,7 @@ func (r *ModuleResolver) dirIsNestedModule(dir string, mod *gocommand.ModuleJSON
 
 func (r *ModuleResolver) modInfo(dir string) (modDir string, modName string) {
 	readModName := func(modFile string) string {
-		modBytes, err := ioutil.ReadFile(modFile)
+		modBytes, err := os.ReadFile(modFile)
 		if err != nil {
 			return ""
 		}

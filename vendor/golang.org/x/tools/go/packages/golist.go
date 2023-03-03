@@ -1023,7 +1023,7 @@ func (state *golistState) writeOverlays() (filename string, cleanup func(), err 
 	if len(state.cfg.Overlay) == 0 {
 		return "", func() {}, nil
 	}
-	dir, err := ioutil.TempDir("", "gopackages-*")
+	dir, err := os.MkdirTemp("", "gopackages-*")
 	if err != nil {
 		return "", nil, err
 	}
@@ -1042,7 +1042,7 @@ func (state *golistState) writeOverlays() (filename string, cleanup func(), err 
 		// Create a unique filename for the overlaid files, to avoid
 		// creating nested directories.
 		noSeparator := strings.Join(strings.Split(filepath.ToSlash(k), "/"), "")
-		f, err := ioutil.TempFile(dir, fmt.Sprintf("*-%s", noSeparator))
+		f, err := os.CreateTemp(dir, fmt.Sprintf("*-%s", noSeparator))
 		if err != nil {
 			return "", func() {}, err
 		}
@@ -1060,7 +1060,7 @@ func (state *golistState) writeOverlays() (filename string, cleanup func(), err 
 	}
 	// Write out the overlay file that contains the filepath mappings.
 	filename = filepath.Join(dir, "overlay.json")
-	if err := ioutil.WriteFile(filename, b, 0665); err != nil {
+	if err := os.WriteFile(filename, b, 0665); err != nil {
 		return "", func() {}, err
 	}
 	return filename, cleanup, nil

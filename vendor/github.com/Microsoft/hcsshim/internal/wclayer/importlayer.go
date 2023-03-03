@@ -148,7 +148,7 @@ func NewLayerWriter(ctx context.Context, path string, parentLayerPaths []string)
 		}, nil
 	}
 
-	importPath, err := ioutil.TempDir("", "hcs")
+	importPath, err := os.MkdirTemp("", "hcs")
 	if err != nil {
 		return nil, err
 	}
