@@ -1078,7 +1078,7 @@ func (client blobClient) getTagsResponder(resp pipeline.Response) (pipeline.Resp
 		return result, err
 	}
 	defer resp.Response().Body.Close()
-	b, err := ioutil.ReadAll(resp.Response().Body)
+	b, err := io.ReadAll(resp.Response().Body)
 	if err != nil {
 		return result, err
 	}
