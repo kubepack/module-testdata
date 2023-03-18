@@ -62,7 +62,7 @@ BASEIMAGE_PROD   ?= gcr.io/distroless/static:nonroot
 BASEIMAGE_DBG    ?= debian:buster
 
 GO_VERSION       ?= 1.17
-BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)
+BUILD_IMAGE      ?= ghcr.io/appscode/golang-dev:$(GO_VERSION)
 CHART_TEST_IMAGE ?= quay.io/helmpack/chart-testing:v3.4.0
 
 OUTBIN = bin/$(OS)_$(ARCH)/$(BIN)
